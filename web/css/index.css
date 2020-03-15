@@ -27,10 +27,15 @@ body {
 .gcw-field-user {
     width: 46px;
     height: 46px;
+    left: 0px;
+    top: 0px;
     position: absolute;
     z-index: 100;
     border-radius: 20px;
     background-image: url("../img/user-sprite.png");
+    -webkit-transition: left 0.5s, top 0.5s;
+    transition: left 0.5s, top 0.5s;
+    transition-timing-function: linear;
 }
 
 .gcw-r00 {
