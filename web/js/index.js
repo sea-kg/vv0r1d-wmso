@@ -8,7 +8,7 @@ function lockMoving() {
     }, 450)
 }
 
-function userMove(rN,cN) {
+function userMove(rN,cN, direction) {
     if (rN < 0) {
         rN = 0;
     }
@@ -24,7 +24,13 @@ function userMove(rN,cN) {
     }
     console.log("move, rN = ", rN);
     console.log("move, cN = ", cN);
-    if (window.gameMap.user["row"] == rN && window.gameMap.user["cell"] == cN) {
+    console.log("move, direction = ", direction);
+    
+    if (
+        window.gameMap.user["row"] == rN 
+        && window.gameMap.user["cell"] == cN
+        && window.gameMap.user["direction"] == direction
+    ) {
         return;
     }
 
@@ -36,6 +42,7 @@ function userMove(rN,cN) {
     if (window.gameMap.data[rN][cN].canMove) {
         window.gameMap.user["row"] = rN;
         window.gameMap.user["cell"] = cN;
+        window.gameMap.user["direction"] = direction;
     }
     renderAll();
 }
@@ -46,7 +53,7 @@ function userMoveUp() {
     console.log("move up");
     var cN = window.gameMap.user["cell"];
     var rN = window.gameMap.user["row"] - 1;
-    userMove(rN, cN);
+    userMove(rN, cN, "up");
 }
 
 function userMoveDown() {
@@ -54,21 +61,21 @@ function userMoveDown() {
     var cN = window.gameMap.user["cell"];
     var rN = window.gameMap.user["row"] + 1;
     console.log("move down, rN = ", rN);
-    userMove(rN, cN);
+    userMove(rN, cN, "down");
 }
 
 function userMoveLeft() {
     console.log("move left ");
     var cN = window.gameMap.user["cell"] - 1;
     var rN = window.gameMap.user["row"];
-    userMove(rN, cN);
+    userMove(rN, cN, "left");
 }
 
 function userMoveRight() {
     console.log("move right ");
     var cN = window.gameMap.user["cell"] + 1;
     var rN = window.gameMap.user["row"];
-    userMove(rN, cN);
+    userMove(rN, cN, "right");
 }
 
 window.gameMap = {
