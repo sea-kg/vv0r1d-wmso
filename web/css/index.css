@@ -7,9 +7,12 @@ body {
 }
 
 .game-fields {
-    height: 450px;
-    width: 800px;
-    background-image: url("../img/grace-50x50.png");
+    display: block;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto
+     
+    /*background-image: url("../img/grace-50x50.png");*/
 }
 
 .gcw-field {
@@ -17,7 +20,7 @@ body {
     height: 50px;
     position: absolute;
     z-index: 99;
-    /* background-image: url("../img/grace-50x50.png"); */
+    background-image: url("../img/grace-50x50.png");
 }
 
 .gcw-field.deny-move {
@@ -31,109 +34,10 @@ body {
     top: 0px;
     position: absolute;
     z-index: 100;
-    border-radius: 20px;
     background-image: url("../img/user-sprite.png");
     -webkit-transition: left 0.5s, top 0.5s;
     transition: left 0.5s, top 0.5s;
     transition-timing-function: linear;
-}
-
-.gcw-r00 {
-    top: 0px;
-}
-
-.gcw-r01 {
-    top: 50px;
-}
-
-.gcw-r02 {
-    top: 100px;
-}
-
-.gcw-r03 {
-    top: 150px;
-}
-
-.gcw-r04 {
-    top: 200px;
-}
-
-.gcw-r05 {
-    top: 250px;
-}
-
-.gcw-r06 {
-    top: 300px;
-}
-
-.gcw-r07 {
-    top: 350px;
-}
-
-.gcw-r08 {
-    top: 400px;
-}
-
-.gcw-c00 {
-    left: 0px;
-}
-
-.gcw-c01 {
-    left: 50px;
-}
-
-.gcw-c02 {
-    left: 100px;
-}
-
-.gcw-c03 {
-    left: 150px;
-}
-
-.gcw-c04 {
-    left: 200px;
-}
-
-.gcw-c05 {
-    left: 250px;
-}
-
-.gcw-c06 {
-    left: 300px;
-}
-
-.gcw-c07 {
-    left: 350px;
-}
-
-.gcw-c08 {
-    left: 400px;
-}
-
-.gcw-c09 {
-    left: 450px;
-}
-
-.gcw-c10 {
-    left: 500px;
-}
-
-.gcw-c11 {
-    left: 550px;
-}
-
-.gcw-c12 {
-    left: 600px;
-}
-
-.gcw-c13 {
-    left: 650px;
-}
-
-.gcw-c14 {
-    left: 700px;
-}
-
-.gcw-c15 {
-    left: 750px;
+    background-size: 120px auto;
+    background-position: 40px 0px;
 }

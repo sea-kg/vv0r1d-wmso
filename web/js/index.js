@@ -1,5 +1,7 @@
 
 window.userInMoving = false;
+window.maxY = 11;
+window.maxX = 11;
 
 function lockMoving() {
     window.userInMoving = true;
@@ -79,9 +81,12 @@ function userMoveRight() {
 }
 
 window.gameMap = {
-    countCellsInRow: 16,
-    countRows: 9,
-    user: {},
+    countCellsInRow: 11,
+    countRows: 11,
+    user: {
+        row: 5,
+        cell: 5
+    },
     data: {}
 }
 
@@ -101,40 +106,18 @@ function generateRandomMap() {
     }
 }
 
-function selectRandomUserPos() {
-    for (var r = 0; r < window.gameMap.countRows; r++) {
-        for (var c = 0; c < window.gameMap.countCellsInRow; c++) {
-            var field = window.gameMap.data[r][c]
-            if (field.canMove == true) {
-                window.gameMap.user["row"] = r
-                window.gameMap.user["cell"] = c
-                return;
-            }
-        }
-    }
-}
-
 function convertToElementId(r,c) {
     return "c" + ("" + r).padStart(2, "0") + ("" + c).padStart(2, "0")
 }
-
-function removeAllPositions(elId) {
-    var el = document.getElementById(elId);
-    for (var r = 0; r < window.gameMap.countRows; r++) {
-        var cnRow = "gcw-r" + ("" + r).padStart(2, "0")
-        el.classList.remove(cnRow);
-    }
-    for (var c = 0; c < window.gameMap.countCellsInRow; c++) {
-        var cnCell = "gcw-c" + ("" + c).padStart(2, "0")
-        el.classList.remove(cnCell);
-    }
-}   
 
 function renderAll() {
     for (var r = 0; r < window.gameMap.countRows; r++) {
         for (var c = 0; c < window.gameMap.countCellsInRow; c++) {
             var elEd = convertToElementId(r,c)
             var el = document.getElementById(elEd);
+            if (!el) {
+                console.error("not found elEd: ", elEd)
+            }
             var field = window.gameMap.data[r][c]
             if (field.canMove == true) {
                 if (el.classList.contains("deny-move")) {
@@ -149,12 +132,11 @@ function renderAll() {
     }
     var userR = window.gameMap.user["row"];
     var userC = window.gameMap.user["cell"];
-    var classNameUserRow = "gcw-r" + ("" + userR).padStart(2, "0")
-    var classNameUserCell = "gcw-c" + ("" + userC).padStart(2, "0")
-    removeAllPositions("u01")
+    // var elId = "c" + ("" + userR).padStart(2, "0") + ("" + userC).padStart(2, "0");
+    // removeAllPositions("u01")
     var userEl = document.getElementById("u01");
-    userEl.classList.add(classNameUserRow)
-    userEl.classList.add(classNameUserCell)
+    userEl.style.top = (userR*50) + "px";
+    userEl.style.left = (userC*50) + "px";
 }
 
 document.addEventListener("keydown", event => {
@@ -170,8 +152,32 @@ document.addEventListener("keydown", event => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function(){ 
+document.addEventListener('DOMContentLoaded', function(){
+    console.log("Content loaded");
+    
+    var _content = "";
+    console.log(window.gameMap);
+    for (var r = 0; r < window.gameMap.countRows; r++) {
+        for (var c = 0; c < window.gameMap.countCellsInRow; c++) {
+            _content += '<div id="' + convertToElementId(r,c) + '" '
+                    + ' style="width: 50px; height: 50px; top: ' + (r * 50) + 'px; left: ' + (c * 50) + 'px;" '
+                    + ' class="gcw-field"></div>';
+            
+            
+        }
+    }
+    _content += '<div id="u01" class="gcw-field-user"></div>';
+
+    var el = document.getElementById("game_fields");
+    el.innerHTML = _content;
+    el.style.width = (window.gameMap.countRows * 50) + "px";
+    el.style.height = (window.gameMap.countCellsInRow * 50) + "px";
+
+    console.log(_content);
+    // 
+    // el.innerHTML = 
+    
+
     generateRandomMap();
-    selectRandomUserPos();
     renderAll();
 });
