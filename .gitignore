@@ -1,7 +1,4 @@
-.wsjcpp/*
-tmp/*
-game-change-the-world
-.logs
+db/*
 .DS_Store
 
 # Prerequisites

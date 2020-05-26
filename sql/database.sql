@@ -12,8 +12,7 @@ CREATE TABLE `wwm_map` (
   `pos_y` BIGINT NOT NULL,
   `can_move` varchar(1) NOT NULL,
   `bg` INT NOT NULL,
-  `fr` INT NOT NULL,
-  PRIMARY KEY (id)
+  `fr` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `wwm_map`

@@ -4,7 +4,7 @@ services:
   wmm_db:
     image: mysql:5.7
     volumes:
-      - "./dckr_mysql:/var/lib/mysql"
+      - "./db:/var/lib/mysql"
       - "./sql:/docker-entrypoint-initdb.d"
     restart: always
     environment:
@@ -23,7 +23,7 @@ services:
     volumes:
       - "./src:/home/wmm"
     ports:
-      - "80:8081"
+      - "8081:80"
     restart: always
     networks:
       - wmm_net

@@ -3,8 +3,9 @@ version: '2'
 services:
   wmm_db:
     image: mysql:5.7
+    container_name: wwm-db
     volumes:
-      - "./dckr_mysql:/var/lib/mysql"
+      - "./db/:/var/lib/mysql"
       - "./sql:/docker-entrypoint-initdb.d"
     restart: always
     environment:
@@ -16,14 +17,16 @@ services:
       - wmm_net
 
   wmm_server:
-    image: golang:1.9.2-stretch
+    image: golang:1.14-stretch
+    container_name: wwm-server
     depends_on:
       - wmm_db
     volumes:
       - "./src:/go/src/app"
+    working_dir: "/go/src/app"
     command: "tail -f /dev/null" # TODO run manually `go run server.go`
     ports:
-      - "80:8081"
+      - "8081:80"
     restart: always
     networks:
       - wmm_net
