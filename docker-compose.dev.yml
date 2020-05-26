@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  wmm_db:
+    image: mysql:5.7
+    volumes:
+      - "./dckr_mysql:/var/lib/mysql"
+      - "./sql:/docker-entrypoint-initdb.d"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wmm
+      MYSQL_DATABASE: wmm
+      MYSQL_USER: wmm
+      MYSQL_PASSWORD: wmm
+    networks:
+      - wmm_net
+
+  example_service2:
+    build: .
+    image: example_service2:2019.1.6
+    depends_on:
+      - example_service2_db
+    volumes:
+      - "./src:/home/example_service2"
+    ports:
+      - "4102:4102"
+    restart: always
+    networks:
+      - example_service2_net
+
+networks:
+  example_service2_net:
+    driver: bridge
+        
