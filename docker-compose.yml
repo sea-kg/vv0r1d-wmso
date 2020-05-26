@@ -15,20 +15,20 @@ services:
     networks:
       - wmm_net
 
-  example_service2:
+  wmm_server:
     build: .
-    image: example_service2:2019.1.6
+    image: wmm:latest
     depends_on:
-      - example_service2_db
+      - wmm_db
     volumes:
-      - "./src:/home/example_service2"
+      - "./src:/home/wmm"
     ports:
-      - "4102:4102"
+      - "80:8081"
     restart: always
     networks:
-      - example_service2_net
+      - wmm_net
 
 networks:
-  example_service2_net:
+  wmm_net:
     driver: bridge
         
