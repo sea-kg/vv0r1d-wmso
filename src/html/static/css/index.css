@@ -6,40 +6,22 @@ body {
     background-color: #402733;
 }
 
-.game-fields {
+#canvas_game_map_background {
     display: block;
-    position: relative;
-    margin-left: auto;
-    margin-right: auto
-     
-    /*background-image: url("../img/grace-50x50.png");*/
+    position: fixed;
+    z-index: 980;
 }
 
-.gcw-field {
-    width: 50px;
-    height: 50px;
-    position: absolute;
-    z-index: 99;
-    background-image: url("../img/grace-50x50.png");
+#canvas_game_map_buildings {
+    display: block;
+    position: fixed;
+    z-index: 981;
 }
 
-.gcw-field.deny-move {
-    background-image: url("../img/stone-50x50.png");
-}
-
-.gcw-field-user {
-    width: 46px;
-    height: 46px;
-    left: 0px;
-    top: 0px;
-    position: absolute;
-    z-index: 100;
-    background-image: url("../img/user-sprite.png");
-    -webkit-transition: left 0.5s, top 0.5s;
-    transition: left 0.5s, top 0.5s;
-    transition-timing-function: linear;
-    background-size: 120px auto;
-    background-position: 40px 0px;
+#canvas_game_map_sprites {
+    display: block;
+    position: fixed;
+    z-index: 982;
 }
 
 .border-top-left {
@@ -167,12 +149,14 @@ body {
 .header-menu {
     height: 75px;
     position: fixed;
-    width: 100%;
     top: 25px;
     text-align: center;
     z-index: 999;
+    width: 180px;
+    padding: 10px;
+    right: 0px;
 }
 
 .header-menu-item {
-    display: inline-block;
+    display: block;
 }
