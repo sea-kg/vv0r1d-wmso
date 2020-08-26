@@ -191,6 +191,11 @@ function loadImage(name, callback) {
     }
 }
 
+function renderMap(mapInfo, elemId, gMap) {
+    // Rendering after load all pictures
+}
+
+
 document.addEventListener('DOMContentLoaded', function(){
     console.log("Content loaded");
     var main_w = window.innerWidth - 200;
@@ -211,7 +216,16 @@ document.addEventListener('DOMContentLoaded', function(){
 
     var ctx = cgm_background.getContext('2d');
 
-    loadImage("ground0", function(img) {
+    for (var r = 0; r < window.gMap.countRows; r++) {
+        for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
+            window.gameGroundMap[c][r]
+
+            console.log("r = ", r);
+            console.log("c = ", c);
+        }
+    }
+
+    loadImage("grace-50x50", function(img) {
         var dx = img.width - 50;
         var dy = img.height - 50;
         console.log("img.width: ", img.width);
