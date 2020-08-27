@@ -161,7 +161,7 @@ window.gMap = {
 
 window.cacheImages = {};
 
-function loadImageToCache(name, callback) {
+function loadImageToCache(name, path, callback) {
     var ret = {
         img: new Image(),
         state: 'loading',
@@ -170,31 +170,88 @@ function loadImageToCache(name, callback) {
         console.log("Loaded: " + name);
         ret.state = 'loaded';
         if (callback) {
-            callback(ret.img);
+            callback(name, ret.img);
         }
     }, false);
     ret.img.addEventListener("error", function() {
         console.log("Error: " + name);
+        ret.state = 'error';
+        ret.img = null;
+        if (callback) {
+            callback(name, ret.img);
+        }
     }, false);
-    ret.img.src = name;
+    ret.img.src = path;
     return ret;
 }
 
 // loadImage("ground0")
 function loadImage(name, callback) {
     if (!window.cacheImages[name]) {
-        window.cacheImages[name] = loadImageToCache("./static/img/" + name + ".png", callback);
+        window.cacheImages[name] = loadImageToCache(name, "./static/img/" + name + ".png", callback);
         return;
     }
     if (callback) {
-        callback(window.cacheImages[name].img);
+        callback(name, window.cacheImages[name].img);
     }
 }
 
-function renderMap(mapInfo, elemId, gMap) {
-    // Rendering after load all pictures
+function loadImages(names, callback) {
+    var counter = 0;
+    var imagesLen = names.length;
+    var ret = {};
+    for (var i in names) {
+        loadImage(names[i], function(name, img) {
+            counter++;
+            ret[name] = img;
+            if (counter >= imagesLen) {
+                callback(ret);
+            }
+        })
+    }
 }
 
+function renderMap(mapInfo, elemId) {
+    var imgNames = [] 
+    for (var r = 0; r < window.gMap.countRows; r++) {
+        for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
+            var name = mapInfo[c][r];
+            if (imgNames.indexOf(name) === -1) {
+                imgNames.push(name);
+            }
+            // console.log("r = ", r);
+            // console.log("c = ", c);
+        }
+    }
+    console.log("imgNames: ", imgNames)
+    var _mapInfo = mapInfo;
+    var _elemId = elemId;
+    loadImages(imgNames, function(imgs) {
+        console.log("imgs", imgs);
+
+        var cgm_background = document.getElementById("canvas_game_map_background");
+        cgm_background.style['left'] = window.gMap.paddingLeft + 'px';
+        cgm_background.style['top'] = window.gMap.paddingTop + 'px';
+        var ctx = cgm_background.getContext('2d');
+        // cgm_background.width = main_w - pad_w;
+        // cgm_background.height = main_h - pad_h;
+        
+        for (var r = 0; r < window.gMap.countRows; r++) {
+            for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
+                var name = mapInfo[c][r];
+                var img = imgs[name];
+                var dx = img.width - 50;
+                var dy = img.height - 50;
+                var y = r * 50 + window.gMap.paddingTop - dy;
+                var x = c * 50 + window.gMap.paddingLeft; // - dx;
+                ctx.drawImage(img, x, y);
+                // alert(x, y);
+            }
+        }
+
+    })
+    // Rendering after load all pictures
+}
 
 document.addEventListener('DOMContentLoaded', function(){
     console.log("Content loaded");
@@ -215,17 +272,18 @@ document.addEventListener('DOMContentLoaded', function(){
     cgm_background.height = main_h - pad_h;
 
     var ctx = cgm_background.getContext('2d');
+    renderMap( window.gameGroundMap, "canvas_game_map_background", window.gMap);
 
     for (var r = 0; r < window.gMap.countRows; r++) {
         for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
             window.gameGroundMap[c][r]
 
-            console.log("r = ", r);
-            console.log("c = ", c);
+            // console.log("r = ", r);
+            // console.log("c = ", c);
         }
     }
 
-    loadImage("grace-50x50", function(img) {
+    /*loadImage("grace-50x50", function(name, img) {
         var dx = img.width - 50;
         var dy = img.height - 50;
         console.log("img.width: ", img.width);
@@ -239,9 +297,9 @@ document.addEventListener('DOMContentLoaded', function(){
                 // alert(x, y);
             }
         }
-    });
+    });*/
 
-    var _content = "";
+    /*var _content = "";
     console.log(window.gameMap);
     for (var r = 0; r < window.gMap.countRows; r++) {
         for (var c = 0; c < window.gMap.countCellsInRow; c++) {
@@ -253,9 +311,9 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
     _content += '<div id="u01" class="gcw-field-user"></div>';
-
-    var el = document.getElementById("game_fields");
-    el.innerHTML = _content;
+    */
+    // var el = document.getElementById("game_fields");
+    // el.innerHTML = _content;
     // el.style.width = (window.gameMap.countRows * 50) + "px";
     // el.style.height = (window.gameMap.countCellsInRow * 50) + "px";
 
@@ -264,6 +322,6 @@ document.addEventListener('DOMContentLoaded', function(){
     // el.innerHTML = 
     
 
-    generateRandomMap();
-    renderAll();
+    // generateRandomMap();
+    // renderAll();
 });
