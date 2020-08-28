@@ -6,24 +6,6 @@ body {
     background-color: #402733;
 }
 
-#canvas_game_map_background {
-    display: block;
-    position: fixed;
-    z-index: 980;
-}
-
-#canvas_game_map_buildings {
-    display: block;
-    position: fixed;
-    z-index: 981;
-}
-
-#canvas_game_map_sprites {
-    display: block;
-    position: fixed;
-    z-index: 982;
-}
-
 .border-top-left {
     width: 200px;
     height: 200px;
@@ -202,4 +184,21 @@ body {
     background-image: url("../img/home0-100x100.png");
     background-size: 55px 35px;
     background-position: 0px 5px;
+}
+
+.game-map-canvas {
+    display: block;
+    position: fixed;
+}
+
+.game-map-canvas.background {
+    z-index: 800;
+}
+
+.game-map-canvas.objects {
+    z-index: 801;
+}
+
+.game-map-canvas.players {
+    z-index: 802;
 }
