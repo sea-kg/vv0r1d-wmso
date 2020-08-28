@@ -27,19 +27,63 @@
         <div class="header-menu-item button1">Game</div>
     </div>
     <canvas id="canvas_game_map_background"></canvas>
-    <canvas id="canvas_game_map_buildings"></canvas>
+    <canvas id="canvas_game_map_objects"></canvas>
     <canvas id="canvas_game_map_sprites"></canvas>
 
     <script>
         
-        window.gameGroundMap = {}
+        window.gameMapBackground = {}
+        window.gameMapObject = {}
+        window.gameMapSprites = {}
 
         for (var x = 0; x < 100; x++) {
-            window.gameGroundMap[x] = {}
+            window.gameMapBackground[x] = {}
             for (var y = 0; y < 100; y++) {
-                window.gameGroundMap[x][y] = "grace-50x50";
+                window.gameMapBackground[x][y] = { 
+                    name: "grace-50x50",
+                    w: 50,
+                    h: 50
+                }
             }
         }
+
+        for (var x = 0; x < 100; x++) {
+            window.gameMapObject[x] = {}
+            for (var y = 0; y < 100; y++) {
+                window.gameMapObject[x][y] = { 
+                    name: "objects/empty-50x50",
+                    w: 50,
+                    h: 50
+                }
+            }
+        }
+
+        window.gameMapObject[2][2] = { name: "tree-50x100", w: 50, h: 50 };
+        window.gameMapObject[2][3] = { name: "tree-50x100", w: 50, h: 50 };
+        window.gameMapObject[2][4] = { name: "tree-50x100", w: 50, h: 50 };
+        window.gameMapObject[10][5] = { name: "tree-50x100", w: 50, h: 50 };
+        window.gameMapObject[10][4] = { name: "stone-50x50", w: 50, h: 50 };
+        window.gameMapObject[15][2] = { name: "stone-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][2] = { name: "stone-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][3] = { name: "stone-50x50", w: 50, h: 50 };
+        window.gameMapObject[5][10] = { name: "home0-100x100", w: 50, h: 50 };
+        window.gameMapObject[6][11] = { name: "objects/road0-50x50", w: 50, h: 50 };
+        window.gameMapObject[6][12] = { name: "objects/road0-50x50", w: 50, h: 50 };
+        window.gameMapObject[5][13] = { name: "objects/road1-50x50", w: 50, h: 50 };
+        window.gameMapObject[4][13] = { name: "objects/road1-50x50", w: 50, h: 50 };
+        window.gameMapObject[3][13] = { name: "objects/road1-50x50", w: 50, h: 50 };
+        window.gameMapObject[2][13] = { name: "objects/road3-50x50", w: 50, h: 50 };
+        window.gameMapObject[2][12] = { name: "objects/road0-50x50", w: 50, h: 50 };
+        window.gameMapObject[2][11] = { name: "objects/road0-50x50", w: 50, h: 50 };
+        window.gameMapObject[2][10] = { name: "objects/road5-50x50", w: 50, h: 50 };
+        window.gameMapObject[3][10] = { name: "objects/road4-50x50", w: 50, h: 50 };
+        window.gameMapObject[6][13] = { name: "objects/road2-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][13] = { name: "objects/road6-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][14] = { name: "objects/road4-50x50", w: 50, h: 50 };
+        window.gameMapObject[6][14] = { name: "objects/road3-50x50", w: 50, h: 50 };
+
+        
+
     </script>
 
     

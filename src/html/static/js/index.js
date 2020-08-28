@@ -215,7 +215,7 @@ function renderMap(mapInfo, elemId) {
     var imgNames = [] 
     for (var r = 0; r < window.gMap.countRows; r++) {
         for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
-            var name = mapInfo[c][r];
+            var name = mapInfo[c][r].name;
             if (imgNames.indexOf(name) === -1) {
                 imgNames.push(name);
             }
@@ -238,14 +238,15 @@ function renderMap(mapInfo, elemId) {
         
         for (var r = 0; r < window.gMap.countRows; r++) {
             for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
-                var name = mapInfo[c][r];
+                var name = mapInfo[c][r].name;
+                var w = mapInfo[c][r].w
+                var h = mapInfo[c][r].h
                 var img = imgs[name];
-                var dx = img.width - 50;
-                var dy = img.height - 50;
-                var y = r * 50 + window.gMap.paddingTop - dy;
-                var x = c * 50 + window.gMap.paddingLeft; // - dx;
+                var dx = img.width - w;
+                var dy = img.height - h;
+                var y = r * h + window.gMap.paddingTop - dy;
+                var x = c * h + window.gMap.paddingLeft; // - dx;
                 ctx.drawImage(img, x, y);
-                // alert(x, y);
             }
         }
 
@@ -271,57 +272,8 @@ document.addEventListener('DOMContentLoaded', function(){
     cgm_background.width = main_w - pad_w;
     cgm_background.height = main_h - pad_h;
 
-    var ctx = cgm_background.getContext('2d');
-    renderMap( window.gameGroundMap, "canvas_game_map_background", window.gMap);
-
-    for (var r = 0; r < window.gMap.countRows; r++) {
-        for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
-            window.gameGroundMap[c][r]
-
-            // console.log("r = ", r);
-            // console.log("c = ", c);
-        }
-    }
-
-    /*loadImage("grace-50x50", function(name, img) {
-        var dx = img.width - 50;
-        var dy = img.height - 50;
-        console.log("img.width: ", img.width);
-        console.log("img.height: ", img.height);
-
-        for (var r = 0; r < window.gMap.countRows; r++) {
-            for (var c = window.gMap.countCellsInRow - 1; c >= 0; c--) {
-                var y = r * 50 + gMap.paddingTop - dy;
-                var x = c * 50 + gMap.paddingLeft; // - dx;
-                ctx.drawImage(img, x, y);
-                // alert(x, y);
-            }
-        }
-    });*/
-
-    /*var _content = "";
-    console.log(window.gameMap);
-    for (var r = 0; r < window.gMap.countRows; r++) {
-        for (var c = 0; c < window.gMap.countCellsInRow; c++) {
-
-            _content += '<div id="' + convertToElementId(r,c) + '" '
-                    + ' style="width: 50px; height: 50px; top: ' + (r * 50 + gMap.paddingTop) + 'px; '
-                    + '  left: ' + (c * 50 + gMap.paddingLeft) + 'px;" '
-                    + ' class="gcw-field"></div>';
-        }
-    }
-    _content += '<div id="u01" class="gcw-field-user"></div>';
-    */
-    // var el = document.getElementById("game_fields");
-    // el.innerHTML = _content;
-    // el.style.width = (window.gameMap.countRows * 50) + "px";
-    // el.style.height = (window.gameMap.countCellsInRow * 50) + "px";
-
-    console.log(_content);
-    // 
-    // el.innerHTML = 
+    // var ctx = cgm_background.getContext('2d');
+    renderMap( window.gameMapBackground, "canvas_game_map_background", window.gMap);
+    renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
     
-
-    // generateRandomMap();
-    // renderAll();
 });
