@@ -20,27 +20,33 @@
         <div class="left-panel"></div>
     </div>
 
-    <div class="header-menu">
-        <div class="header-menu-item button1">About</div>
-        <div class="header-menu-item button1">Screenshots</div>
-        <div class="header-menu-item button1">Sign In</div>
-        <div class="header-menu-item button1">Game</div>
+    <div class="right-menu">
+        <div class="right-menu-logo"></div>
+        <div class="right-menu-list">
+            <div class="right-menu-list-topic">Строить</div>
+            <div class="right-menu-list-item road"></div>
+            <div class="right-menu-list-item home"></div>
+        </div>
+        <div class="right-menu-item button1">About</div>
+        <div class="right-menu-item button1">Screenshots</div>
+        <div class="right-menu-item button1">Sign In</div>
+        <div class="right-menu-item button1">Game</div>
     </div>
     <canvas id="canvas_game_map_background"></canvas>
     <canvas id="canvas_game_map_objects"></canvas>
-    <canvas id="canvas_game_map_sprites"></canvas>
+    <canvas id="canvas_game_map_players"></canvas>
 
     <script>
         
         window.gameMapBackground = {}
         window.gameMapObject = {}
-        window.gameMapSprites = {}
+        window.gameMapPlayers = {}
 
         for (var x = 0; x < 100; x++) {
             window.gameMapBackground[x] = {}
             for (var y = 0; y < 100; y++) {
                 window.gameMapBackground[x][y] = { 
-                    name: "grace-50x50",
+                    name: "background/grace0-50x50",
                     w: 50,
                     h: 50
                 }
@@ -58,14 +64,17 @@
             }
         }
 
-        window.gameMapObject[2][2] = { name: "tree-50x100", w: 50, h: 50 };
-        window.gameMapObject[2][3] = { name: "tree-50x100", w: 50, h: 50 };
-        window.gameMapObject[2][4] = { name: "tree-50x100", w: 50, h: 50 };
-        window.gameMapObject[10][5] = { name: "tree-50x100", w: 50, h: 50 };
-        window.gameMapObject[10][4] = { name: "stone-50x50", w: 50, h: 50 };
-        window.gameMapObject[15][2] = { name: "stone-50x50", w: 50, h: 50 };
-        window.gameMapObject[7][2] = { name: "stone-50x50", w: 50, h: 50 };
-        window.gameMapObject[7][3] = { name: "stone-50x50", w: 50, h: 50 };
+        window.gameMapObject[2][2] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[2][3] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[3][2] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[3][3] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[3][4] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[4][4] = { name: "objects/stone0-50x50", w: 50, h: 50 };
+        window.gameMapObject[10][5] = { name: "objects/tree0-50x100", w: 50, h: 50 };
+        window.gameMapObject[10][4] = { name: "objects/stone0-50x50", w: 50, h: 50 };
+        window.gameMapObject[15][2] = { name: "objects/stone0-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][2] = { name: "objects/stone0-50x50", w: 50, h: 50 };
+        window.gameMapObject[7][3] = { name: "objects/stone0-50x50", w: 50, h: 50 };
         window.gameMapObject[5][10] = { name: "home0-100x100", w: 50, h: 50 };
         window.gameMapObject[6][11] = { name: "objects/road0-50x50", w: 50, h: 50 };
         window.gameMapObject[6][12] = { name: "objects/road0-50x50", w: 50, h: 50 };
@@ -82,8 +91,18 @@
         window.gameMapObject[7][14] = { name: "objects/road4-50x50", w: 50, h: 50 };
         window.gameMapObject[6][14] = { name: "objects/road3-50x50", w: 50, h: 50 };
 
-        
-
+        for (var x = 0; x < 100; x++) {
+            window.gameMapPlayers[x] = {}
+            for (var y = 0; y < 100; y++) {
+                window.gameMapPlayers[x][y] = { 
+                    name: "objects/empty-50x50",
+                    w: 50,
+                    h: 50
+                }
+            }
+        }
+        window.gameMapPlayers[10][12] = { name: "players/player0-50x50", w: 50, h: 50 };
+        window.gameMapPlayers[15][6] = { name: "players/player1-50x50", w: 50, h: 50 };
     </script>
 
     

@@ -275,5 +275,6 @@ document.addEventListener('DOMContentLoaded', function(){
     // var ctx = cgm_background.getContext('2d');
     renderMap( window.gameMapBackground, "canvas_game_map_background", window.gMap);
     renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
+    renderMap( window.gameMapPlayers, "canvas_game_map_players", window.gMap);
     
 });

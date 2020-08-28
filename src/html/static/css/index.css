@@ -146,17 +146,60 @@ body {
     vertical-align: top;
 }
 
-.header-menu {
-    height: 75px;
+.right-menu {
     position: fixed;
-    top: 25px;
+    top: 0px;
     text-align: center;
     z-index: 999;
-    width: 180px;
-    padding: 10px;
+    width: 200px;
     right: 0px;
+    padding: 0px;
 }
 
-.header-menu-item {
+.right-menu-item {
     display: block;
+}
+
+.right-menu-logo {
+    width: 200px;
+    height: 70px;
+    content: url("../img/logo-200x50.png");
+}
+
+.right-menu-list {
+    width: 200px;
+    display: block;
+}
+
+.right-menu-list-topic {
+    width: 200px;
+    display: block;
+    color: white;
+    border-bottom: 1px solid white;
+}
+
+.right-menu-list-item {
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+    border: 1px solid black;
+    margin-top: 5px;
+    margin-left: 5px;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.right-menu-list-item:hover {
+    border: 1px solid white;
+}
+
+.right-menu-list-item.road {
+    background-image: url("../img/objects/road0-50x50.png");
+}
+
+.right-menu-list-item.home {
+    background-image: url("../img/home0-100x100.png");
+    background-size: 55px 35px;
+    background-position: 0px 5px;
 }
