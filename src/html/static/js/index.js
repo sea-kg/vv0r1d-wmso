@@ -194,6 +194,30 @@ function renderMap(mapInfo, elemId) {
     // Rendering after load all pictures
 }
 
+var userWannaBuildObj = '';
+
+function userWannaBuild(ob) {
+    userWannaBuildObj = ob;
+}
+
+function userClickOnMap(e) {
+
+    if (userWannaBuildObj != '') {
+        var x = e.offsetX - window.gMap.paddingLeft;
+        var y = e.offsetY - window.gMap.paddingTop;
+        console.log ("x = ", x, " y = ", y);
+    
+        var c = (x - (x % 50)) / 50;
+        var r = (y - (y % 50)) / 50;
+    
+        console.log("c= ", c, " r=", r);
+        
+        window.gameMapObject[c][r] = { name: userWannaBuildObj, w: 50, h: 50 };
+        userWannaBuildObj = '';
+        renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function(){
     console.log("Content loaded");
     var main_w = window.innerWidth - 200;
@@ -223,6 +247,8 @@ document.addEventListener('DOMContentLoaded', function(){
     canvas_game_map_players.style['top'] = gMap.paddingTop + 'px';
     canvas_game_map_players.width = main_w - pad_w;
     canvas_game_map_players.height = main_h - pad_h;
+
+    canvas_game_map_players.onmousedown = userClickOnMap;
 
     // var ctx = cgm_background.getContext('2d');
     renderMap( window.gameMapBackground, "canvas_game_map_background", window.gMap);

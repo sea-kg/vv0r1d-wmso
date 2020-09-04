@@ -176,14 +176,40 @@ body {
     border: 1px solid white;
 }
 
-.right-menu-list-item.road {
+.right-menu-list-item.road0 {
     background-image: url("../img/objects/road0-50x50.png");
+}
+
+.right-menu-list-item.road1 {
+    background-image: url("../img/objects/road1-50x50.png");
+}
+
+.right-menu-list-item.road2 {
+    background-image: url("../img/objects/road2-50x50.png");
+}
+
+.right-menu-list-item.road3 {
+    background-image: url("../img/objects/road3-50x50.png");
+}
+
+.right-menu-list-item.road4 {
+    background-image: url("../img/objects/road4-50x50.png");
+}
+
+.right-menu-list-item.road5 {
+    background-image: url("../img/objects/road5-50x50.png");
+}
+
+.right-menu-list-item.road6 {
+    background-image: url("../img/objects/road6-50x50.png");
 }
 
 .right-menu-list-item.home {
     background-image: url("../img/home0-100x100.png");
-    background-size: 55px 35px;
+    background-size: 125px 85px;
     background-position: 0px 5px;
+    width: 95px;
+    height: 95px;
 }
 
 .game-map-canvas {
