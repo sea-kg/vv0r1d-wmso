@@ -198,6 +198,8 @@ var userWannaBuildObj = '';
 
 function userWannaBuild(ob) {
     userWannaBuildObj = ob;
+
+    // canvas_game_map_players.style.cursor = "url('" + userWannaBuildObj + ".png'), auto"
 }
 
 function userClickOnMap(e) {
@@ -205,12 +207,12 @@ function userClickOnMap(e) {
     if (userWannaBuildObj != '') {
         var x = e.offsetX - window.gMap.paddingLeft;
         var y = e.offsetY - window.gMap.paddingTop;
-        console.log ("x = ", x, " y = ", y);
+        // console.log ("x = ", x, " y = ", y);
     
         var c = (x - (x % 50)) / 50;
         var r = (y - (y % 50)) / 50;
     
-        console.log("c= ", c, " r=", r);
+        // console.log("c= ", c, " r=", r);
         
         window.gameMapObject[c][r] = { name: userWannaBuildObj, w: 50, h: 50 };
         userWannaBuildObj = '';
