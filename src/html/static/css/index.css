@@ -6,24 +6,6 @@ body {
     background-color: #402733;
 }
 
-#canvas_game_map_background {
-    display: block;
-    position: fixed;
-    z-index: 980;
-}
-
-#canvas_game_map_buildings {
-    display: block;
-    position: fixed;
-    z-index: 981;
-}
-
-#canvas_game_map_sprites {
-    display: block;
-    position: fixed;
-    z-index: 982;
-}
-
 .border-top-left {
     width: 200px;
     height: 200px;
@@ -146,17 +128,103 @@ body {
     vertical-align: top;
 }
 
-.header-menu {
-    height: 75px;
+.right-menu {
     position: fixed;
-    top: 25px;
+    top: 0px;
     text-align: center;
     z-index: 999;
-    width: 180px;
-    padding: 10px;
+    width: 200px;
     right: 0px;
+    padding: 0px;
 }
 
-.header-menu-item {
+.right-menu-item {
     display: block;
+}
+
+.right-menu-logo {
+    width: 200px;
+    height: 70px;
+    content: url("../img/logo-200x50.png");
+}
+
+.right-menu-list {
+    width: 200px;
+    display: block;
+}
+
+.right-menu-list-topic {
+    width: 200px;
+    display: block;
+    color: white;
+    border-bottom: 1px solid white;
+}
+
+.right-menu-list-item {
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+    border: 1px solid black;
+    margin-top: 5px;
+    margin-left: 5px;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.right-menu-list-item:hover {
+    border: 1px solid white;
+}
+
+.right-menu-list-item.road0 {
+    background-image: url("../img/objects/road0-50x50.png");
+}
+
+.right-menu-list-item.road1 {
+    background-image: url("../img/objects/road1-50x50.png");
+}
+
+.right-menu-list-item.road2 {
+    background-image: url("../img/objects/road2-50x50.png");
+}
+
+.right-menu-list-item.road3 {
+    background-image: url("../img/objects/road3-50x50.png");
+}
+
+.right-menu-list-item.road4 {
+    background-image: url("../img/objects/road4-50x50.png");
+}
+
+.right-menu-list-item.road5 {
+    background-image: url("../img/objects/road5-50x50.png");
+}
+
+.right-menu-list-item.road6 {
+    background-image: url("../img/objects/road6-50x50.png");
+}
+
+.right-menu-list-item.home {
+    background-image: url("../img/home0-100x100.png");
+    background-size: 125px 85px;
+    background-position: 0px 5px;
+    width: 95px;
+    height: 95px;
+}
+
+.game-map-canvas {
+    display: block;
+    position: fixed;
+}
+
+.game-map-canvas.background {
+    z-index: 800;
+}
+
+.game-map-canvas.objects {
+    z-index: 801;
+}
+
+.game-map-canvas.players {
+    z-index: 802;
 }
