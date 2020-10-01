@@ -127,7 +127,7 @@ function loadImageToCache(name, path, callback) {
 // loadImage("ground0")
 function loadImage(name, callback) {
     if (!window.cacheImages[name]) {
-        window.cacheImages[name] = loadImageToCache(name, "./static/img/" + name + ".png", callback);
+        window.cacheImages[name] = loadImageToCache(name, "./img/" + name + ".png", callback);
         return;
     }
     if (callback) {
