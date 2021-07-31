@@ -257,4 +257,8 @@ document.addEventListener('DOMContentLoaded', function(){
     renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
     renderMap( window.gameMapPlayers, "canvas_game_map_players", window.gMap);
     
+    
+    vvapi.load_map().done(function(result) {
+        console.log("game_map = ", result);
+    })
 });

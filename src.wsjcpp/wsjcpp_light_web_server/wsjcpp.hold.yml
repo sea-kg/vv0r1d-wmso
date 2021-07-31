@@ -75,8 +75,8 @@ distribution:
     target-file: "wsjcpp_light_web_server.cpp"
     type: "source-code"
     sha1: "d723e513f1f9e8d036a89b8cf1fe7a2a3bf38d21"
-  - source-file: "scripts.wsjcpp/generate.WsjcppLightWebHttpHandler"
-    target-file: "generate.WsjcppLightWebHttpHandler"
+  - source-file: "scripts.wsjcpp/generate.WsjcppLightWebHttpHandler.wsjcpp-script"
+    target-file: "generate.WsjcppLightWebHttpHandler.wsjcpp-script"
     type: "safe-scripting-generate"
 
     sha1: "e1602b16e03008ed67edabca9771f6cf91a5a6b9"
