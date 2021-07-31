@@ -1,5 +1,9 @@
 db/*
 .DS_Store
+.wsjcpp/
+tmp/
+vv-server
+.logs/
 
 # Prerequisites
 *.d
