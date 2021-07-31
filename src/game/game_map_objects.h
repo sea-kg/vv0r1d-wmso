@@ -6,6 +6,14 @@
 
 const int LAYER_VEGETATION = 2;
 
+class GameMapObject {
+    public:
+        GameMapObject();
+
+    private:
+        std::string TAG;
+};
+
 class GameMapObjects {
     public:
         GameMapObjects();
