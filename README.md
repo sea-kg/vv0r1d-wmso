@@ -1,34 +1,20 @@
-# web-mmo-multiplayer
+# vv web game (in progress)
 
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/sea-kg/vv0r1d-wmso.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/sea-kg/vv0r1d-wmso/alerts/) [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/sea-kg/vv0r1d-wmso.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/sea-kg/vv0r1d-wmso/context:javascript)
 
 
 ![Alt text](/contrib/screenshot.jpg?raw=true "Screenshot 01")
 
-### Production
 
-```
-$ docker-compose up
-```
+## front end
 
-And look on http://localhost:8081/
+canvas + javascript
 
 
-### Development
+## backend 
 
-Start containers
-```
-$ docker-compose -f docker-compose.dev.yml up
-```
-Attach to golang server
+c++ cmake
 
 ```
-$ docker exec -it wwm-server bash
-root@426a52214ad7:/go/src/app# ./install_requirements.sh
-root@426a52214ad7:/go/src/app# exec go run server.go
-```
-
-For remove containers use a command: 
-```
-$ docker-compose -f docker-compose.dev.yml down
+$ ./build_simple.sh
 ```
