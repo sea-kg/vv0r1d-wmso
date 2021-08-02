@@ -7,19 +7,6 @@
     
 </head>
 <body>
-    <div class="borders">
-        <div class="border-top-left"></div>
-        <div class="border-left"></div>
-        <div class="border-top"></div>
-        <div class="border-top-right"></div>
-        <div class="border-right"></div>
-        <div class="border-bottom-left"></div>
-        <div class="border-bottom"></div>
-        <div class="border-bottom-right"></div>
-        <div class="bottom-panel"></div>
-        <div class="left-panel"></div>
-    </div>
-
     <div class="right-menu">
         <div class="right-menu-logo"></div>
         <div class="right-menu-list">
@@ -38,6 +25,8 @@
         <div class="right-menu-item button1">Sign In</div>
         <div class="right-menu-item button1">Game</div>
     </div>
+    <canvas class="game-window-render" width="1000px" height="500px" id="game_window_render"></canvas>
+
     <canvas class="game-map-canvas background" id="canvas_game_map_background"></canvas>
     <canvas class="game-map-canvas objects" id="canvas_game_map_objects"></canvas>
     <canvas class="game-map-canvas players" id="canvas_game_map_players"></canvas>
@@ -127,8 +116,9 @@
 
     </script>
 
-    <script src="./js/vvapi.js"></script>
+    <script src="./js/vv-api.js"></script>
+    <script src="./js/vv-render.js"></script>
     <script src="./js/index.js"></script>
-    
+
 </body>
 </html>

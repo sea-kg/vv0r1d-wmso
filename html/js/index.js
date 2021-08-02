@@ -256,9 +256,31 @@ document.addEventListener('DOMContentLoaded', function(){
     renderMap( window.gameMapBackground, "canvas_game_map_background", window.gMap);
     renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
     renderMap( window.gameMapPlayers, "canvas_game_map_players", window.gMap);
+
+    resize_canvas();
+
+    window.vvrender = new VvRender('game_window_render');
+    window.vvapi = new VvApi();
+
     
-    
+
     vvapi.load_map().done(function(result) {
         console.log("game_map = ", result);
-    })
+    });
 });
+
+
+function resize_canvas() {
+    // console.log(window.innerWidth);
+    var el = document.getElementById('game_window_render');
+    el.style['width'] = window.innerWidth + 'px';
+    el.style['height'] = window.innerHeight + 'px';
+    el.width = window.innerWidth;
+    el.height = window.innerHeight;
+
+    if (window.vvrender) {
+        window.vvrender.update();
+    }
+}
+
+window.addEventListener("resize", resize_canvas);

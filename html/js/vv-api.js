@@ -97,5 +97,3 @@ class VvApi {
         return d;
     }
 };
-
-window.vvapi = new VvApi();
