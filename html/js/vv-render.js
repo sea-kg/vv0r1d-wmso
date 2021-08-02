@@ -6,7 +6,7 @@ class VvRender {
         this.cacheImages = {};
         this.left_panel_width = 200;
         this.bottom_panel_height = 50;
-
+        this.perf = [];
 
         var self = this;
         // borders
@@ -77,12 +77,6 @@ class VvRender {
     }
 
     draw_borders() {
-        console.log("Draw borders");
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(30, 50);
-        this.ctx.lineTo(150, 100);
-        this.ctx.stroke();
         this.ctx.fillStyle = '#b04333';
 
         // bottom panel
@@ -109,6 +103,22 @@ class VvRender {
     }
 
     update() {
+        var _perf_start = performance.now();
+
         this.draw_borders();
+        this.update_perf(performance.now() - _perf_start);
+    }
+
+    update_perf(new_val_perf) {
+        this.perf.push(new_val_perf);
+        while (this.perf.length > 50) {
+            this.perf.splice(0,1);
+        }
+        var _perf_avarage = 0;
+        for (var i = 0; i < this.perf.length; i++) {
+            _perf_avarage += this.perf[i];
+        }
+        _perf_avarage = _perf_avarage / this.perf.length;
+        console.log("avarage perf = ", _perf_avarage, "ms, length " + this.perf.length);
     }
 };
