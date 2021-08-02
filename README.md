@@ -3,11 +3,12 @@
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/sea-kg/vv0r1d-wmso.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/sea-kg/vv0r1d-wmso/alerts/) [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/sea-kg/vv0r1d-wmso.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/sea-kg/vv0r1d-wmso/context:javascript)
 
 
+![Alt text](/contrib/screenshot.jpg?raw=true "Screenshot 01")
 
 ### Production
 
 ```
-$ docker-compose uo
+$ docker-compose up
 ```
 
 And look on http://localhost:8081/
