@@ -5,6 +5,7 @@
 #include <wsjcpp_light_web_http_handler_rewrite_folder.h>
 #include <light_web_http_handler_api.h>
 #include "game_map_objects.h"
+#include <sqlite3.h>
 
 int main(int argc, const char* argv[]) {
     std::string TAG = "MAIN";
@@ -15,9 +16,10 @@ int main(int argc, const char* argv[]) {
     }
     WsjcppLog::setPrefixLogFile("vv-server");
     WsjcppLog::setLogDirectory(".logs");
-    // TODO your code here
 
     GameMapObjects *pGameMaps = new GameMapObjects();
+
+    std::cout << "SQLite version:" << sqlite3_libversion() << std::endl;
 
     WsjcppLightWebServer httpServer;
     httpServer.setPort(1234);

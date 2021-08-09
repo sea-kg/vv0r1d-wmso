@@ -41,4 +41,12 @@ list (APPEND WSJCPP_SOURCES "./src.wsjcpp/wsjcpp_light_web_server/wsjcpp_light_w
 list (APPEND WSJCPP_INCLUDE_DIRS "./src.wsjcpp/nlohmann_json/")
 list (APPEND WSJCPP_SOURCES "./src.wsjcpp/nlohmann_json/json.hpp")
 
+# non-official-sqlite3:v3.34.0
+list (APPEND WSJCPP_INCLUDE_DIRS "./src.wsjcpp/non_official_sqlite3/")
+list (APPEND WSJCPP_SOURCES "./src.wsjcpp/non_official_sqlite3/sqlite3.c")
+list (APPEND WSJCPP_SOURCES "./src.wsjcpp/non_official_sqlite3/sqlite3.h")
+
+# required-libraries
+list (APPEND WSJCPP_LIBRARIES "-ldl")
+
 
