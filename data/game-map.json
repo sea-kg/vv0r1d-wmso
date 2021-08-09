@@ -1,3 +1,197 @@
 {
-    "width"
+    "width": 2000,
+    "height": 2000,
+    "render": {
+        "layer-background": [
+            {
+                "texture": "background/grace0-50x50",
+                "x": 0,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 50,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 100,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 150,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 200,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 250,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 300,
+                "y": 0,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 300,
+                "y": 50,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 300,
+                "y": 100,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 300,
+                "y": 150,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "background/grace0-50x50",
+                "x": 150,
+                "y": 150,
+                "width": 50,
+                "height": 50
+            }
+
+        ],
+        "layer-roads": [
+            {
+                "texture": "objects/road0-50x50",
+                "x": 300,
+                "y": 550,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 300,
+                "y": 600,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 250,
+                "y": 650,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 200,
+                "y": 650,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 150,
+                "y": 650,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 100,
+                "y": 650,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 100,
+                "y": 600,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road0-50x50",
+                "x": 100,
+                "y": 550,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road5-50x50",
+                "x": 100,
+                "y": 500,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road4-50x50",
+                "x": 150,
+                "y": 500,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/road2-50x50",
+                "x": 310,
+                "y": 650,
+                "width": 50,
+                "height": 50
+            }
+        ],
+        "layer-vegetation": [
+            {
+                "texture": "objects/tree0-50x100",
+                "x": 150,
+                "y": 150,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "objects/tree0-50x100",
+                "x": 250,
+                "y": 250,
+                "width": 50,
+                "height": 50
+            }
+        ],
+        "layer-buildings": [
+            {
+                "texture": "home0-100x100",
+                "x": 250,
+                "y": 500,
+                "width": 50,
+                "height": 50
+            },
+            {
+                "texture": "players/player0-50x50",
+                "x": 500,
+                "y": 500,
+                "width": 50,
+                "height": 50
+            }
+        ]
+    }
 }

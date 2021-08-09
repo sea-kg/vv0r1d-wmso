@@ -1,4 +1,11 @@
 
+// TODO get variables from server
+VVAPI_LAYER_BACKGROUND = 1;
+VVAPI_LAYER_ROADS = 2;
+VVAPI_LAYER_VEGETATION = 3;
+VVAPI_LAYER_BUILDING = 4;
+
+
 class VvApi {
     constructor() {
         this.base_url = location.protocol + "//" + location.host;

@@ -222,50 +222,32 @@ function userClickOnMap(e) {
 
 document.addEventListener('DOMContentLoaded', function(){
     console.log("Content loaded");
-    var main_w = window.innerWidth - 200;
-    var main_h = window.innerHeight - 50;
-    var pad_w = main_w % 50;
-    var pad_h = main_h % 50;
-    gMap.paddingLeft = Math.floor(pad_w / 2);
-    gMap.paddingTop = Math.floor(pad_h / 2);
-    gMap.countRows = (main_h - pad_h) / 50;
-    gMap.countCellsInRow = (main_w - pad_w) / 50;
-    console.log(gMap);
-    
-    var canvas_game_map_background = document.getElementById("canvas_game_map_background");
-    canvas_game_map_background.style['left'] = gMap.paddingLeft + 'px';
-    canvas_game_map_background.style['top'] = gMap.paddingTop + 'px';
-    canvas_game_map_background.width = main_w - pad_w;
-    canvas_game_map_background.height = main_h - pad_h;
 
-    var canvas_game_map_objects = document.getElementById("canvas_game_map_objects");
-    canvas_game_map_objects.style['left'] = gMap.paddingLeft + 'px';
-    canvas_game_map_objects.style['top'] = gMap.paddingTop + 'px';
-    canvas_game_map_objects.width = main_w - pad_w;
-    canvas_game_map_objects.height = main_h - pad_h;
-    
-    var canvas_game_map_players = document.getElementById("canvas_game_map_players");
-    canvas_game_map_players.style['left'] = gMap.paddingLeft + 'px';
-    canvas_game_map_players.style['top'] = gMap.paddingTop + 'px';
-    canvas_game_map_players.width = main_w - pad_w;
-    canvas_game_map_players.height = main_h - pad_h;
-
-    canvas_game_map_players.onmousedown = userClickOnMap;
-
-    // var ctx = cgm_background.getContext('2d');
-    renderMap( window.gameMapBackground, "canvas_game_map_background", window.gMap);
-    renderMap( window.gameMapObject, "canvas_game_map_objects", window.gMap);
-    renderMap( window.gameMapPlayers, "canvas_game_map_players", window.gMap);
+    // canvas_game_map_players.onmousedown = userClickOnMap;
 
     resize_canvas();
 
     window.vvrender = new VvRender('game_window_render');
     window.vvapi = new VvApi();
 
-    
-
     vvapi.load_map().done(function(result) {
+        var objects = result["objects"];
+        for (var i in objects) {
+            var obj = objects[i];
+            if (obj.l == VVAPI_LAYER_BACKGROUND) {
+                vvrender.add_background_object(obj)
+            } else if (obj.l == VVAPI_LAYER_ROADS) {
+                vvrender.add_road_object(obj)
+            } else if (obj.l == VVAPI_LAYER_VEGETATION) {
+                vvrender.add_vegetation_object(obj)
+            } else if (obj.l == VVAPI_LAYER_BUILDING) {
+                vvrender.add_building_object(obj)
+            } else {
+                console.error("Unknown layer")
+            }
+        }
         console.log("game_map = ", result);
+        vvrender.update();
     });
 });
 
@@ -284,3 +266,9 @@ function resize_canvas() {
 }
 
 window.addEventListener("resize", resize_canvas);
+
+setInterval(() => {
+    if (window.vvrender) {
+        window.vvrender.update();
+    }
+}, 200);

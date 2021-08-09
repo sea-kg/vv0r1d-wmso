@@ -7,7 +7,11 @@ class VvRender {
         this.left_panel_width = 200;
         this.bottom_panel_height = 50;
         this.perf = [];
-
+        this.layer_background = [];
+        this.layer_roads = [];
+        this.layer_vegetation = [];
+        this.layer_buildings = [];
+        
         var self = this;
         // borders
         this.loadImages(
@@ -33,7 +37,7 @@ class VvRender {
             state: 'loading',
         };
         ret.img.addEventListener("load", function() {
-            console.log("Loaded: " + name);
+            // console.log("Loaded: " + name);
             ret.state = 'loaded';
             if (callback) {
                 callback(name, ret.img);
@@ -76,6 +80,74 @@ class VvRender {
         }
     }
 
+    add_background_object(obj) {
+        this.layer_background.push(obj);
+        if (!this.cacheImages[obj.t]) {
+            this.loadImage(obj.t)
+        }
+    }
+
+    add_road_object(obj) {
+        this.layer_roads.push(obj);
+        if (!this.cacheImages[obj.t]) {
+            this.loadImage(obj.t)
+        }
+    }
+
+    add_vegetation_object(obj) {
+        this.layer_vegetation.push(obj);
+        if (!this.cacheImages[obj.t]) {
+            this.loadImage(obj.t)
+        }
+    }
+
+    add_building_object(obj) {
+        this.layer_buildings.push(obj);
+        if (!this.cacheImages[obj.t]) {
+            this.loadImage(obj.t)
+        }
+    }
+
+    draw_background() {
+        for (var i in this.layer_background) {
+            var obj = this.layer_background[i];
+            // console.log(obj);
+            if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
+                this.ctx.drawImage(this.cacheImages[obj.t].img, obj.x, obj.y);
+            }
+        }
+    }
+
+    draw_roads() {
+        for (var i in this.layer_roads) {
+            var obj = this.layer_roads[i];
+            // console.log(obj);
+            if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
+                this.ctx.drawImage(this.cacheImages[obj.t].img, obj.x, obj.y);
+            }
+        }
+    }
+
+    draw_vegetation() {
+        for (var i in this.layer_vegetation) {
+            var obj = this.layer_vegetation[i];
+            // console.log(obj);
+            if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
+                this.ctx.drawImage(this.cacheImages[obj.t].img, obj.x, obj.y);
+            }
+        }
+    }
+
+    draw_buildings() {
+        for (var i in this.layer_buildings) {
+            var obj = this.layer_buildings[i];
+            // console.log(obj);
+            if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
+                this.ctx.drawImage(this.cacheImages[obj.t].img, obj.x, obj.y);
+            }
+        }
+    }
+
     draw_borders() {
         this.ctx.fillStyle = '#b04333';
 
@@ -104,9 +176,13 @@ class VvRender {
 
     update() {
         var _perf_start = performance.now();
-
+        this.draw_background();
+        this.draw_roads();
+        this.draw_vegetation();
+        this.draw_buildings();
         this.draw_borders();
         this.update_perf(performance.now() - _perf_start);
+        
     }
 
     update_perf(new_val_perf) {
@@ -119,6 +195,12 @@ class VvRender {
             _perf_avarage += this.perf[i];
         }
         _perf_avarage = _perf_avarage / this.perf.length;
-        console.log("avarage perf = ", _perf_avarage, "ms, length " + this.perf.length);
+        // console.log("avarage perf = ", _perf_avarage, "ms, length " + this.perf.length);
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillText(
+            _perf_avarage.toFixed(3) + "ms",
+            20,
+            window.innerHeight - 20
+        );
     }
 };

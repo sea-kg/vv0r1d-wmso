@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
 
     WsjcppLightWebServer httpServer;
     httpServer.setPort(1234);
-    httpServer.setMaxWorkers(4);
+    httpServer.setMaxWorkers(2);
     httpServer.addHandler(new LightWebHttpHandlerApi(pGameMaps));
     httpServer.addHandler(new WsjcppLightWebHttpHandlerRewriteFolder("/", "./html"));
     httpServer.startSync(); // this method will be hold current thread, if you with you can call just start/stop command

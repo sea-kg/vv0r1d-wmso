@@ -4,7 +4,11 @@
 #include <string>
 #include <json.hpp>
 
-const int LAYER_VEGETATION = 2;
+const int LAYER_BACKGROUND = 1;
+const int LAYER_ROADS = 2;
+const int LAYER_VEGETATION = 3;
+const int LAYER_BUILDING = 4;
+
 
 class GameMapObject {
     public:
