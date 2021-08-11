@@ -37,20 +37,23 @@ document.addEventListener('DOMContentLoaded', function(){
             }
         }
         console.log("game_map = ", result);
+        vvrender.resized();
         vvrender.update();
     });
 });
 
-
 function resize_canvas() {
+
     // console.log(window.innerWidth);
     var el = document.getElementById('game_window_render');
     el.style['width'] = window.innerWidth + 'px';
     el.style['height'] = window.innerHeight + 'px';
     el.width = window.innerWidth;
     el.height = window.innerHeight;
-
+    
+    
     if (window.vvrender) {
+        window.vvrender.resized();
         window.vvrender.update();
     }
 }
@@ -61,4 +64,4 @@ setInterval(() => {
     if (window.vvrender) {
         window.vvrender.update();
     }
-}, 200);
+}, 40);

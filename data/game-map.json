@@ -184,13 +184,6 @@
                 "y": 500,
                 "width": 50,
                 "height": 50
-            },
-            {
-                "texture": "players/player0-50x50",
-                "x": 500,
-                "y": 500,
-                "width": 50,
-                "height": 50
             }
         ]
     }
