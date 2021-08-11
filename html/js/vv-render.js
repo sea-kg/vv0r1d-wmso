@@ -2,6 +2,7 @@
 class VvRender {
     constructor(canvasid) {
         this.canvas = document.getElementById(canvasid);
+        this.canvas.onmousedown = this.__render_onclick;
         this.ctx = this.canvas.getContext("2d");
         this.cacheImages = {};
         this.left_panel_width = 200;
@@ -202,5 +203,11 @@ class VvRender {
             20,
             window.innerHeight - 20
         );
+    }
+
+    __render_onclick(e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+        console.log ("x = ", x, " y = ", y);
     }
 };

@@ -3,33 +3,24 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="./css/index.css"/>
-    
+    <style>
+body {
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+    background-color: #000;
+}
+
+.game-window-render {
+    position: fixed;
+    z-index: 1000;
+}
+    </style>
 </head>
 <body>
-    <div class="right-menu">
-        <div class="right-menu-logo"></div>
-        <div class="right-menu-list">
-            <div class="right-menu-list-topic">Строить</div>
-            <div class="right-menu-list-item road0" onclick="userWannaBuild('objects/road0-50x50')"></div>
-            <div class="right-menu-list-item road1" onclick="userWannaBuild('objects/road1-50x50')"></div>
-            <div class="right-menu-list-item road2" onclick="userWannaBuild('objects/road2-50x50')"></div>
-            <div class="right-menu-list-item road3" onclick="userWannaBuild('objects/road3-50x50')"></div>
-            <div class="right-menu-list-item road4" onclick="userWannaBuild('objects/road4-50x50')"></div>
-            <div class="right-menu-list-item road5" onclick="userWannaBuild('objects/road5-50x50')"></div>
-            <div class="right-menu-list-item road6" onclick="userWannaBuild('objects/road6-50x50')"></div>
-            <div class="right-menu-list-item home" onclick="userWannaBuild('home0')"></div>
-        </div>
-        <div class="right-menu-item button1">About</div>
-        <div class="right-menu-item button1">Screenshots</div>
-        <div class="right-menu-item button1">Sign In</div>
-        <div class="right-menu-item button1">Game</div>
-    </div>
     <canvas class="game-window-render" width="1000px" height="500px" id="game_window_render"></canvas>
-
-    <script src="./js/vv-api.js"></script>
-    <script src="./js/vv-render.js"></script>
-    <script src="./js/index.js"></script>
-
+    <script src="./js/vv-api.js?v=1"></script>
+    <script src="./js/vv-render.js?v=1"></script>
+    <script src="./js/index.js?v=1"></script>
 </body>
 </html>
