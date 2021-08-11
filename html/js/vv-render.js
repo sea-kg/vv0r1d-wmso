@@ -222,16 +222,18 @@ class VvRender {
         if (this.cacheImages[texturePlayer] && this.cacheImages[texturePlayer].state == 'loaded') {
             this.ctx.drawImage(
                 this.cacheImages[texturePlayer].img,
-                this.player_draw_coordinates.x,
-                this.player_draw_coordinates.y
+                this.player_draw_coordinates.x - 25,
+                this.player_draw_coordinates.y - 25
             );
         }
     }
 
     move_player() {
         if (
-            parseInt(this.player_target_coordinates.x) != parseInt(this.player_coordinates.x)
-            && parseInt(this.player_target_coordinates.y) != parseInt(this.player_coordinates.y)
+            Math.hypot(
+                this.player_target_coordinates.x - this.player_coordinates.x,
+                this.player_target_coordinates.y - this.player_coordinates.y
+            ) > 5
         ) {
             var angel = Math.atan2(
                 this.player_target_coordinates.x - this.player_coordinates.x,
@@ -239,6 +241,7 @@ class VvRender {
             )
             this.player_coordinates.x += parseInt(Math.sin(angel)*5);
             this.player_coordinates.y += parseInt(Math.cos(angel)*5);
+
         }
     }
     update() {
@@ -280,9 +283,12 @@ class VvRender {
         var x = e.offsetX;
         var y = e.offsetY;
         
-        this.leftRealX = 0;
-        this.topRealY = 0;
-        
+        if (
+            y > window.innerHeight - this.bottom_panel_height
+            || x > window.innerWidth - this.left_panel_width) {
+            return;
+        }
+
         console.log(this.player_coordinates);
 
         this.player_target_coordinates = {
