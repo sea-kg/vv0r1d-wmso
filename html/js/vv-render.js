@@ -15,14 +15,15 @@ class VvRender {
         this.player_draw_coordinates = {};
         this.topLeftRealX = 0;
         this.topLeftRealY = 0;
+        this.render_frame_player = {x: 0, y: 0, d: 50, t: 0};
         this.player_coordinates = {
-            x: 20,
-            y: 120
+            x: 0,
+            y: 0
         };
 
         this.player_target_coordinates = {
-            x: 20,
-            y: 120
+            x: 0,
+            y: 0
         }
 
         var self = this;
@@ -214,18 +215,32 @@ class VvRender {
     }
 
     draw_player() {
-        const texturePlayer = "players/player0-50x50";
+        const texturePlayer = "players/mafuyu";
         if (!this.cacheImages[texturePlayer]) {
             this.loadImage(texturePlayer);
         }
-
         if (this.cacheImages[texturePlayer] && this.cacheImages[texturePlayer].state == 'loaded') {
             this.ctx.drawImage(
                 this.cacheImages[texturePlayer].img,
+                this.render_frame_player.x,
+                this.render_frame_player.y,
+                50, 50,
                 this.player_draw_coordinates.x - 25,
-                this.player_draw_coordinates.y - 25
+                this.player_draw_coordinates.y - 45,
+                50, 50
             );
+            this.moveppl += 50;
+            if (this.moveppl >= 200) {
+                this.moveppl = 0;
+            }
         }
+
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillText(
+            "{x,y}={" + this.player_coordinates.x + "," + this.player_coordinates.y + "}",
+            20,
+            window.innerHeight - 40
+        );
     }
 
     move_player() {
@@ -239,9 +254,42 @@ class VvRender {
                 this.player_target_coordinates.x - this.player_coordinates.x,
                 this.player_target_coordinates.y - this.player_coordinates.y
             )
+            
+            const leftDown  = -1 * Math.PI / 4;
+            const leftTop  = -3 * Math.PI / 4;
+            const rightTop =  3 * Math.PI / 4;
+            const rightDown =  Math.PI / 4;
+            
+            if (angel >= rightDown && angel <= rightTop) {
+                this.render_frame_player.y = 100;
+            } else if (angel > leftTop && angel <= leftDown) {
+                this.render_frame_player.y = 50;
+            } else if (angel > leftDown && angel <= rightDown) {
+                this.render_frame_player.y = 0;
+            } else if (angel > rightTop || angel <= leftTop) {
+                this.render_frame_player.y = 150;
+            } else {
+                this.render_frame_player.y = 0;
+            }
+            const t = new Date().getTime();
+            if (t - this.render_frame_player.t > 100) { // every 10 frames
+                this.render_frame_player.x += this.render_frame_player.d;
+                if (this.render_frame_player.x >= 200) {
+                    this.render_frame_player.x = 0;
+                }
+                this.render_frame_player.t = t;
+            }
+            
+            // console.log(angel);
             this.player_coordinates.x += parseInt(Math.sin(angel)*5);
             this.player_coordinates.y += parseInt(Math.cos(angel)*5);
-
+        } else {
+            this.render_frame_player = {
+                x: 0,
+                y: 0,
+                d: 50,
+                t: 0
+            }
         }
     }
     update() {

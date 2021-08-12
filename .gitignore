@@ -4,6 +4,7 @@ db/*
 tmp/
 vv-server
 .logs/
+src-img/*
 
 # Prerequisites
 *.d

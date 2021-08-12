@@ -18,3 +18,8 @@ c++ cmake
 ```
 $ ./build_simple.sh
 ```
+
+
+## Rederenses
+
+* https://untamed.wild-refuge.net/rmxpresources.php?characters
