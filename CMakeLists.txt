@@ -11,19 +11,29 @@ set(EXECUTABLE_OUTPUT_PATH ${vv-server_SOURCE_DIR})
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/api")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/game")
+list (APPEND WSJCPP_INCLUDE_DIRS "src/server")
 
 list (APPEND WSJCPP_SOURCES "src/main.cpp")
 
 #### BEGIN_WSJCPP_APPEND
 #### END_WSJCPP_APPEND
 
-include_directories(${WSJCPP_INCLUDE_DIRS})
-
 # api
 list (APPEND WSJCPP_SOURCES "./src/api/light_web_http_handler_api.cpp")
 
 # game
 list (APPEND WSJCPP_SOURCES "./src/game/game_map_objects.cpp")
+
+# server
+list (APPEND WSJCPP_SOURCES "./src/server/vv_ws_server.cpp")
+
+# libhv
+add_subdirectory(src-libhv)
+list (APPEND WSJCPP_LIBRARIES hv_static)
+message(FATAL "${PROJECT_BINARY_DIR}/src-libhv/include/hv")
+list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src-libhv/include/hv")
+
+include_directories(${WSJCPP_INCLUDE_DIRS})
 
 add_executable (vv-server ${WSJCPP_SOURCES})
 

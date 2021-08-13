@@ -19,7 +19,13 @@ c++ cmake
 $ ./build_simple.sh
 ```
 
+## Included
+
+- https://github.com/ithewei/libhv/
+- https://www.sqlite.org/
 
 ## Rederenses
+
+Sprites for playes:
 
 * https://untamed.wild-refuge.net/rmxpresources.php?characters

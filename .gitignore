@@ -5,7 +5,7 @@ tmp/
 vv-server
 .logs/
 src-img/*
-
+libhv.*.log
 # Prerequisites
 *.d
 
