@@ -216,6 +216,30 @@ class VvRender {
             this.loadImage(texturePlayer);
         }
         if (this.cacheImages[texturePlayer] && this.cacheImages[texturePlayer].state == 'loaded') {
+
+            // line to target
+            this.ctx.beginPath(); 
+            this.ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            this.ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            this.ctx.moveTo(
+                this.player_draw_coordinates.x,
+                this.player_draw_coordinates.y
+            );
+            this.ctx.lineTo(
+                this.player_target_coordinates.x + this.topLeftRealX,
+                this.player_target_coordinates.y + this.topLeftRealY,
+            );
+            this.ctx.lineWidth = 4;
+            
+            this.ctx.stroke();
+            
+            this.ctx.beginPath();
+            this.ctx.arc(
+                this.player_target_coordinates.x + this.topLeftRealX,
+                this.player_target_coordinates.y + this.topLeftRealY,
+                25, 0, 2 * Math.PI, false);
+            this.ctx.fill();
+            
             this.ctx.drawImage(
                 this.cacheImages[texturePlayer].img,
                 this.render_frame_player.x,
