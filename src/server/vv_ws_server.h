@@ -9,8 +9,6 @@
 #include "htime.h"
 #include "hssl.h"
 
-using namespace hv;
-
 class MyContext {
     public:
         MyContext();
@@ -22,9 +20,10 @@ class MyContext {
 class VvWsServer {
     public:
         VvWsServer();
-        void startSync();
+        WebSocketService *getService();
     private:
         std::string TAG;
+        WebSocketService m_wsService;
 };
 
 

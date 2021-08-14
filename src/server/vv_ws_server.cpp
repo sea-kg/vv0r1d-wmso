@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+using namespace hv;
 
 // ---------------------------------------------------------------------
 // MyContext
@@ -23,56 +24,23 @@ int MyContext::handleMessage(const std::string& msg) {
 VvWsServer::VvWsServer() {
     TAG = "VvWsServer";
 
-}
-
-void VvWsServer::startSync() {
-    int port = 1235;
-
-    HttpService router;
-    router.GET("/ping", [](HttpRequest* req, HttpResponse* resp) {
-        return resp->String("pong");
-    });
-
-    router.GET("/data", [](HttpRequest* req, HttpResponse* resp) {
-        static char data[] = "0123456789";
-        return resp->Data(data, 10 /*, false */);
-    });
-
-    router.GET("/paths", [&router](HttpRequest* req, HttpResponse* resp) {
-        return resp->Json(router.Paths());
-    });
-
-    router.GET("/get", [](HttpRequest* req, HttpResponse* resp) {
-        resp->json["origin"] = req->client_addr.ip;
-        resp->json["url"] = req->url;
-        resp->json["args"] = req->query_params;
-        resp->json["headers"] = req->headers;
-        return 200;
-    });
-
-    router.POST("/echo", [](HttpRequest* req, HttpResponse* resp) {
-        resp->content_type = req->content_type;
-        resp->body = req->body;
-        return 200;
-    });
-
-    WebSocketService ws;
-    ws.onopen = [](const WebSocketChannelPtr& channel, const std::string& url) {
+    // m_wsService = new WebSocketService();
+    m_wsService.onopen = [](const WebSocketChannelPtr& channel, const std::string& url) {
         printf("onopen: GET %s\n", url.c_str());
         MyContext* ctx = channel->newContext<MyContext>();
         // send(time) every 1s
-        ctx->timerID = setInterval(1000, [channel](TimerID id) {
+        ctx->timerID = hv::setInterval(1000, [channel](hv::TimerID id) {
             char str[DATETIME_FMT_BUFLEN] = {0};
             datetime_t dt = datetime_now();
             datetime_fmt(&dt, str);
             channel->send(str);
         });
     };
-    ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
+    m_wsService.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
         MyContext* ctx = channel->getContext<MyContext>();
         ctx->handleMessage(msg);
     };
-    ws.onclose = [](const WebSocketChannelPtr& channel) {
+    m_wsService.onclose = [](const WebSocketChannelPtr& channel) {
         printf("onclose\n");
         MyContext* ctx = channel->getContext<MyContext>();
         if (ctx->timerID != INVALID_TIMER_ID) {
@@ -81,9 +49,8 @@ void VvWsServer::startSync() {
         channel->deleteContext<MyContext>();
     };
 
-    websocket_server_t server;
-    server.service = &router;
-    server.port = port;
-    server.ws = &ws;
-    websocket_server_run(&server);
+}
+
+WebSocketService *VvWsServer::getService() {
+    return &m_wsService;
 }

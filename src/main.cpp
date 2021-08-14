@@ -2,11 +2,9 @@
 #include <iostream>
 #include <algorithm>
 #include <wsjcpp_core.h>
-#include <wsjcpp_light_web_http_handler_rewrite_folder.h>
-#include <light_web_http_handler_api.h>
 #include "game_map_objects.h"
 #include <sqlite3.h>
-#include "vv_ws_server.h"
+#include "vv_server.h"
 
 int main(int argc, const char* argv[]) {
     std::string TAG = "MAIN";
@@ -20,17 +18,12 @@ int main(int argc, const char* argv[]) {
 
     GameMapObjects *pGameMaps = new GameMapObjects();
 
+    int nPort = 1234;
     std::cout << "SQLite version:" << sqlite3_libversion() << std::endl;
+    std::cout << "Starting on port: http://localhost:" << nPort << "/" << std::endl;
 
-    WsjcppLightWebServer httpServer;
-    httpServer.setPort(1234);
-    httpServer.setMaxWorkers(2);
-    httpServer.addHandler(new LightWebHttpHandlerApi(pGameMaps));
-    httpServer.addHandler(new WsjcppLightWebHttpHandlerRewriteFolder("/", "./html"));
-    httpServer.start(); // this method will be hold current thread, if you with you can call just start/stop command
-
-    VvWsServer wsServer;
-    wsServer.startSync();
+    VvServer server(pGameMaps);
+    server.startSync(nPort);
 
     return 0;
 }
