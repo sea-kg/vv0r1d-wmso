@@ -22,36 +22,5 @@ body {
     <script src="./js/vv-api.js?v=1"></script>
     <script src="./js/vv-render.js?v=1"></script>
     <script src="./js/index.js?v=1"></script>
-
-    <script type="text/javascript">
-        function WebSocketTest(url)
-        {
-          if ("WebSocket" in window)
-          {
-            var ws = new WebSocket("ws://localhost:1235/");
-
-            ws.onopen = function()
-            {
-              console.log("open");
-              ws.send("hello");
-            };
-        
-            ws.onmessage = function(ev)
-            {
-              var received_msg = ev.data;
-              console.log("received websocket message: " + received_msg);
-            };
-        
-            ws.onclose = function()
-            {
-              console.log("closed");
-            };
-          }
-          else
-          {
-            console.log("not found WebSocket!");
-          }
-        }
-        </script>
 </body>
 </html>
