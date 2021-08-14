@@ -24,6 +24,7 @@ list (APPEND WSJCPP_SOURCES "./src/game/game_map_objects.cpp")
 list (APPEND WSJCPP_SOURCES "./src/server/vv_http_server.cpp")
 list (APPEND WSJCPP_SOURCES "./src/server/vv_ws_server.cpp")
 list (APPEND WSJCPP_SOURCES "./src/server/vv_server.cpp")
+list (APPEND WSJCPP_SOURCES "./src/server/player_context.cpp")
 
 # libhv
 add_subdirectory(src-libhv)

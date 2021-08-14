@@ -16,10 +16,7 @@ class VvRender {
         this.topLeftRealX = 0;
         this.topLeftRealY = 0;
         this.render_frame_player = {x: 0, y: 0, d: 50, t: 0};
-        this.player_coordinates = {
-            x: 0,
-            y: 0
-        };
+        this.player_coordinates = null;
 
         this.player_target_coordinates = {
             x: 0,
@@ -211,8 +208,6 @@ class VvRender {
             // bottom left
             this.ctx.drawImage(this.cacheImages["borders0"].img, 0, bs - ans, ans, ans, 0, window.innerHeight - this.bottom_panel_height - ans, ans, ans);
         }
-
-       
     }
 
     draw_player() {
@@ -236,15 +231,21 @@ class VvRender {
             }
         }
 
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillText(
-            "{x,y}={" + this.player_coordinates.x + "," + this.player_coordinates.y + "}",
-            20,
-            window.innerHeight - 40
-        );
+        if (this.player_coordinates) {
+            this.ctx.fillStyle = "#000";
+            this.ctx.fillText(
+                "{x,y}={" + this.player_coordinates.x + "," + this.player_coordinates.y + "}",
+                20,
+                window.innerHeight - 40
+            );
+        }
+        
     }
 
     move_player() {
+        if (!this.player_coordinates) {
+            return;
+        }
         if (
             Math.hypot(
                 this.player_target_coordinates.x - this.player_coordinates.x,
@@ -293,13 +294,21 @@ class VvRender {
             }
         }
     }
-    update() {
-        this.move_player();
 
+    update() {
+        var _perf_start = performance.now();
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillRect(0,0,window.innerWidth, window.innerHeight);
+
+        if (!this.player_coordinates) {
+            this.draw_borders();
+            return;
+        }
+
+        this.move_player();
         this.topLeftRealX = this.player_draw_coordinates.x - parseInt(this.player_coordinates.x);
         this.topLeftRealY = this.player_draw_coordinates.y - parseInt(this.player_coordinates.y);
-        var _perf_start = performance.now();
-        this.ctx.fillRect(0,0,window.innerWidth, window.innerHeight);
+        
         this.draw_background();
         this.draw_roads();
         this.draw_vegetation();
@@ -340,15 +349,13 @@ class VvRender {
 
         console.log(this.player_coordinates);
 
-        this.player_target_coordinates = {
-            x: this.player_coordinates.x + (x - this.player_draw_coordinates.x),
-            y: this.player_coordinates.y + (y - this.player_draw_coordinates.y),
+        if (this.player_coordinates) {
+            this.player_target_coordinates = {
+                x: this.player_coordinates.x + (x - this.player_draw_coordinates.x),
+                y: this.player_coordinates.y + (y - this.player_draw_coordinates.y),
+            }
         }
         console.log(this.player_target_coordinates);
-        
-
-        // console.log ("x = ", x, " y = ", y);
-        // let angel = Math.atan2(x - window.innerWidth/2, y - window.innerHeight/2)
-        // console.log ("angel = ", angel);
+        vvapi.ws_player_move_to(this.player_target_coordinates.x, this.player_target_coordinates.y);
     }
 };

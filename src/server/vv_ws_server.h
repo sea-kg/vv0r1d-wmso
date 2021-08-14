@@ -4,17 +4,24 @@
 #include <string>
 #include <json.hpp>
 
+#include "player_context.h"
 #include "WebSocketServer.h"
 #include "EventLoop.h"
 #include "htime.h"
 #include "hssl.h"
 
-class MyContext {
+class VvWsConnectionContext {
     public:
-        MyContext();
-        ~MyContext();
+        VvWsConnectionContext();
+        ~VvWsConnectionContext();
         int handleMessage(const std::string& msg);
-        hv::TimerID timerID;
+        hv::TimerID &getTimerId();
+        void setTimerId(hv::TimerID &timerID);
+        PlayerContext *getPlayerContext();
+        void setPlayerContext(PlayerContext *);
+    private:
+        hv::TimerID m_nTimerID;
+        PlayerContext *m_pPlayerContext;
 };
 
 class VvWsServer {
@@ -22,8 +29,11 @@ class VvWsServer {
         VvWsServer();
         WebSocketService *getService();
     private:
+        void onMessage(const WebSocketChannelPtr& channel, const std::string& msg);
+
         std::string TAG;
         WebSocketService m_wsService;
+        std::map<std::string, PlayerContext*> m_mapSessions;
 };
 
 

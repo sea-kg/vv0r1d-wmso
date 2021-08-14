@@ -12,13 +12,13 @@ document.addEventListener("keydown", event => {
     }
 });
 
+window.vvapi = new VvApi();
+
 document.addEventListener('DOMContentLoaded', function(){
     console.log("Content loaded");
 
     resize_canvas();
-
     window.vvrender = new VvRender('game_window_render');
-    window.vvapi = new VvApi();
 
     vvapi.load_map().done(function(result) {
         var objects = result["objects"];
@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', function(){
         vvrender.resized();
         vvrender.update();
     });
+
+    vvapi.ws_get_player_position().done(function(data) {
+        console.log("ws_get_player_position: ", data);
+        vvrender.player_coordinates = data;
+        vvrender.player_target_coordinates = data;
+    })
 });
 
 function resize_canvas() {

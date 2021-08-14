@@ -9,7 +9,68 @@ VVAPI_LAYER_BUILDING = 4;
 class VvApi {
     constructor() {
         this.base_url = location.protocol + "//" + location.host;
+        this.ws_req_id = 0;
+        this.ws_requests = {};
+        this.ws_state = null;
+
+        var self = this;
+        if ("WebSocket" in window) {
+            this.ws = new WebSocket("ws://" + location.host + "/ws-api/");
+
+            this.ws.onopen = function() {
+                console.log("open");
+                if (!localStorage.getItem("vv-session-token")) {
+                    var stoken = self.random_session_token();
+                    localStorage.setItem("vv-session-token", stoken);
+                } else {
+                    self.ws.send(JSON.stringify({
+                        "id": "auth",
+                        "method": "set_session_token",
+                        "params": {
+                            "token": localStorage.getItem("vv-session-token")
+                        }
+                    }));
+                }
+                self.ws.send(JSON.stringify({"method": "hello"}));
+                // self.ws_state = true;
+            };
+        
+            this.ws.onmessage = function(ev) {
+                var received_msg = ev.data;
+                console.log(received_msg);
+                var resp = JSON.parse(received_msg);
+                var msg_id = resp["id"];
+                if (msg_id == "auth") {
+                    self.ws_state = true;
+                }
+                if (self.ws_requests[msg_id]) {
+                    self.ws_requests[msg_id].resolve(resp["result"]);
+                    delete self.ws_requests[msg_id];
+                }
+                // TODO
+                // this.ws_requests;
+                console.log("received websocket message: " + received_msg);
+            };
+        
+            this.ws.onclose = function() {
+              console.log("closed");
+              self.ws_state = false;
+            };
+          } else {
+            console.log("not found WebSocket!");
+          }
     }
+
+    random_session_token() {
+        var length = 50;
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+       }
+       return result;
+    };
 
     promise() {
         var d = {};
@@ -102,5 +163,35 @@ class VvApi {
         var d = this.promise();
         this.request("/api/v1/get_map?v=1", d);
         return d;
+    }
+
+    ws_request(methodname, params, d) {
+        var defer = d || this.promise();
+        var _params = params || {};
+        if (!this.ws_state) {
+            var self = this;
+            setTimeout(function() {
+                self.ws_request(methodname, _params, defer);
+            }, 100);
+        } else {
+            console.log(methodname, params);
+            var new_id = this.ws_req_id++;
+            this.ws.send(JSON.stringify({
+                "id": new_id,
+                "method": methodname,
+                "params": params  
+            }))
+            this.ws_requests[new_id] = defer;
+        }
+        return defer;
+    }
+
+    ws_player_move_to(x, y) {
+        return this.ws_request("player_move_to", {"x": x, "y": y});
+    }
+
+    ws_get_player_position() {
+        console.log("get_player_position");
+        return this.ws_request("get_player_position", {});
     }
 };
