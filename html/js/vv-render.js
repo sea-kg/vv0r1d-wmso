@@ -32,18 +32,7 @@ class VvRender {
         }
 
         // borders
-        this.loadImages(
-            [
-                "borders/border-bottom",
-                "borders/border-bottom-left",
-                "borders/border-bottom-right",
-                "borders/border-left",
-                "borders/border-right",
-                "borders/border-top",
-                "borders/border-top-left",
-                "borders/border-top-right",
-            ],
-            function() {
+        this.loadImages(["borders0"], function() {
                 self.draw_borders();
             }
         );
@@ -190,28 +179,40 @@ class VvRender {
 
     draw_borders() {
         this.ctx.fillStyle = '#b04333';
-
         // bottom panel
         this.ctx.fillRect(0, window.innerHeight - this.bottom_panel_height, window.innerWidth, this.bottom_panel_height);
 
         // left panel
         this.ctx.fillRect(window.innerWidth - this.left_panel_width, 0, this.left_panel_width, window.innerHeight);
 
-
-        for (var y = 200; y < window.innerHeight - this.bottom_panel_height - 150; y += 50) {
-            this.ctx.drawImage(this.cacheImages["borders/border-left"].img, 0, y);
-            this.ctx.drawImage(this.cacheImages["borders/border-right"].img, window.innerWidth - this.left_panel_width - 25, y);
+        if (this.cacheImages["borders0"] && this.cacheImages["borders0"].state == 'loaded') {
+            var bs = 400;
+            var ans = 150;
+            var ow = 50;
+            var oh = 25;
+            for (var y = ans; y < window.innerHeight - this.bottom_panel_height - ans + 2*oh; y += oh) {
+                // left
+                this.ctx.drawImage(this.cacheImages["borders0"].img, 0, ans, ow, oh, 0, y, ow, oh);
+                // right
+                this.ctx.drawImage(this.cacheImages["borders0"].img, bs - oh, ans, oh, ow, window.innerWidth - this.left_panel_width - oh, y, oh, ow);
+            }
+            for (var x = ans; x < window.innerWidth - this.left_panel_width - ans + 2*ow; x += ow) {
+                // top
+                this.ctx.drawImage(this.cacheImages["borders0"].img, ans, 0, ow, oh, x, 0, ow, oh);
+                // bottom
+                this.ctx.drawImage(this.cacheImages["borders0"].img, ans, bs - oh, ow, oh, x, window.innerHeight - this.bottom_panel_height - oh, ow, oh);
+            }
+            // top left
+            this.ctx.drawImage(this.cacheImages["borders0"].img, 0, 0, ans, ans, 0, 0, ans, ans);
+            // top right
+            this.ctx.drawImage(this.cacheImages["borders0"].img, bs - ans, 0, ans, ans, window.innerWidth - this.left_panel_width - ans, 0, ans, ans);
+            // bottom right
+            this.ctx.drawImage(this.cacheImages["borders0"].img, bs - ans, bs - ans, ans, ans, window.innerWidth - this.left_panel_width - ans, window.innerHeight - this.bottom_panel_height - ans, ans, ans);
+            // bottom left
+            this.ctx.drawImage(this.cacheImages["borders0"].img, 0, bs - ans, ans, ans, 0, window.innerHeight - this.bottom_panel_height - ans, ans, ans);
         }
 
-        for (var x = 200; x < window.innerWidth - this.left_panel_width - 150; x += 50) {
-            this.ctx.drawImage(this.cacheImages["borders/border-top"].img, x, 0);
-            this.ctx.drawImage(this.cacheImages["borders/border-bottom"].img, x, window.innerHeight - this.bottom_panel_height - 25);
-        }
-        
-        this.ctx.drawImage(this.cacheImages["borders/border-top-left"].img, 0, 0);
-        this.ctx.drawImage(this.cacheImages["borders/border-top-right"].img, window.innerWidth - this.left_panel_width - 200, 0);
-        this.ctx.drawImage(this.cacheImages["borders/border-bottom-right"].img, window.innerWidth - this.left_panel_width - 200, window.innerHeight - this.bottom_panel_height - 200);
-        this.ctx.drawImage(this.cacheImages["borders/border-bottom-left"].img, 0, window.innerHeight - this.bottom_panel_height - 200);
+       
     }
 
     draw_player() {
