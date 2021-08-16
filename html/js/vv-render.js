@@ -17,7 +17,7 @@ class VvRender {
         this.topLeftRealY = 0;
         this.render_frame_player = {x: 0, y: 0, d: 50, t: 0};
         this.player_coordinates = null;
-
+        this.highlight_road = null;
         this.player_target_coordinates = {
             x: 0,
             y: 0
@@ -28,8 +28,16 @@ class VvRender {
             self.__render_onclick(e);
         }
 
+        this.canvas.onmousemove = function(e) {
+            self.__render_onmousemove(e);
+        }
+
         // borders
-        this.loadImages(["borders0"], function() {
+        this.loadImages([
+            "borders0",
+            "menu-build",
+            "menu-destroy",
+        ], function() {
                 self.draw_borders();
             }
         );
@@ -125,8 +133,8 @@ class VvRender {
             // console.log(obj);
             if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
                 this.ctx.drawImage(this.cacheImages[obj.t].img,
-                    obj.x + this.topLeftRealX,
-                    obj.y + this.topLeftRealY
+                    obj.x - this.topLeftRealX,
+                    obj.y - this.topLeftRealY
                 );
             }
         }
@@ -139,10 +147,21 @@ class VvRender {
             if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
                 this.ctx.drawImage(
                     this.cacheImages[obj.t].img,
-                    obj.x + this.topLeftRealX,
-                    obj.y + this.topLeftRealY,
+                    obj.x - this.topLeftRealX,
+                    obj.y - this.topLeftRealY,
                 );
             }
+        }
+
+        if (this.highlight_road) {
+            this.ctx.fillStyle = 'rgba(255,0,0,0.2)';
+            this.ctx.fillRect(
+                this.highlight_road.x - this.topLeftRealX,
+                this.highlight_road.y - this.topLeftRealY,
+                this.highlight_road.w,
+                this.highlight_road.h
+            )
+            // TODO if radious < 100 so show menu object
         }
     }
 
@@ -153,8 +172,8 @@ class VvRender {
             if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
                 this.ctx.drawImage(
                     this.cacheImages[obj.t].img,
-                    obj.x + this.topLeftRealX,
-                    obj.y + this.topLeftRealY,
+                    obj.x - this.topLeftRealX,
+                    obj.y - this.topLeftRealY,
                 );
             }
         }
@@ -167,8 +186,8 @@ class VvRender {
             if (this.cacheImages[obj.t] && this.cacheImages[obj.t].state == 'loaded') {
                 this.ctx.drawImage(
                     this.cacheImages[obj.t].img,
-                    obj.x + this.topLeftRealX,
-                    obj.y + this.topLeftRealY,
+                    obj.x - this.topLeftRealX,
+                    obj.y - this.topLeftRealY,
                 );
             }
         }
@@ -208,6 +227,13 @@ class VvRender {
             // bottom left
             this.ctx.drawImage(this.cacheImages["borders0"].img, 0, bs - ans, ans, ans, 0, window.innerHeight - this.bottom_panel_height - ans, ans, ans);
         }
+
+        // draw menu
+        if (this.cacheImages["menu-destroy"] && this.cacheImages["menu-destroy"].state == 'loaded') {
+            this.ctx.drawImage(this.cacheImages["menu-destroy"].img, 
+                window.innerWidth - this.left_panel_width0 + 50, 
+                50, 50, 50);
+        }
     }
 
     draw_player() {
@@ -226,8 +252,8 @@ class VvRender {
                 this.player_draw_coordinates.y
             );
             this.ctx.lineTo(
-                this.player_target_coordinates.x + this.topLeftRealX,
-                this.player_target_coordinates.y + this.topLeftRealY,
+                this.player_target_coordinates.x - this.topLeftRealX,
+                this.player_target_coordinates.y - this.topLeftRealY,
             );
             this.ctx.lineWidth = 4;
             
@@ -235,8 +261,8 @@ class VvRender {
             
             this.ctx.beginPath();
             this.ctx.arc(
-                this.player_target_coordinates.x + this.topLeftRealX,
-                this.player_target_coordinates.y + this.topLeftRealY,
+                this.player_target_coordinates.x - this.topLeftRealX,
+                this.player_target_coordinates.y - this.topLeftRealY,
                 25, 0, 2 * Math.PI, false);
             this.ctx.fill();
             
@@ -330,8 +356,8 @@ class VvRender {
         }
 
         this.move_player();
-        this.topLeftRealX = this.player_draw_coordinates.x - parseInt(this.player_coordinates.x);
-        this.topLeftRealY = this.player_draw_coordinates.y - parseInt(this.player_coordinates.y);
+        this.topLeftRealX = this.player_coordinates.x - this.player_draw_coordinates.x;
+        this.topLeftRealY = this.player_coordinates.y - this.player_draw_coordinates.y;
         
         this.draw_background();
         this.draw_roads();
@@ -371,15 +397,40 @@ class VvRender {
             return;
         }
 
-        console.log(this.player_coordinates);
+        // console.log(this.player_coordinates);
 
         if (this.player_coordinates) {
             this.player_target_coordinates = {
                 x: this.player_coordinates.x + (x - this.player_draw_coordinates.x),
                 y: this.player_coordinates.y + (y - this.player_draw_coordinates.y),
             }
+            console.log(this.player_target_coordinates);
+            vvapi.ws_player_move_to(this.player_target_coordinates.x, this.player_target_coordinates.y);
         }
-        console.log(this.player_target_coordinates);
-        vvapi.ws_player_move_to(this.player_target_coordinates.x, this.player_target_coordinates.y);
     }
+
+    __render_onmousemove(e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+        x = this.topLeftRealX + x;
+        y = this.topLeftRealY + y;
+
+        console.log("x,y = ", x, y);
+        // TODO highlight objects
+        var road_highlighted = false;
+        for (var i in this.layer_roads) {
+            var r = this.layer_roads[i];
+            if (
+                x >= r.x && x <= r.x + r.w
+                && y >= r.y && y <= r.y + r.h
+            ) {
+                road_highlighted = true;
+                this.highlight_road = r;
+            }
+        }
+        if (!road_highlighted) {
+            this.highlight_road = null;
+        }
+    }
+
 };

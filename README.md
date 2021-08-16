@@ -29,3 +29,4 @@ $ ./build_simple.sh
 Sprites for playes:
 
 * https://untamed.wild-refuge.net/rmxpresources.php?characters
+* https://opengameart.org/content/2d-effects-0
