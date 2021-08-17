@@ -30,3 +30,18 @@ Sprites for playes:
 
 * https://untamed.wild-refuge.net/rmxpresources.php?characters
 * https://opengameart.org/content/2d-effects-0
+
+
+
+## Build docker and run
+
+Build
+```
+$ docker build --tag sea5kg/vv-server:v0.0.0 .
+```
+
+Run
+```
+$ docker run --rm -it -p -v `pwd`/data:/opt/src/data 1234:1234 sea5kg/vv-server:v0.0.0 bash
+
+```

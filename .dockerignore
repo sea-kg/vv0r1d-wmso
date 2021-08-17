@@ -1,0 +1,7 @@
+.logs
+.wsjcpp
+*.log
+src-img
+tmp
+contrib
+src-svg
