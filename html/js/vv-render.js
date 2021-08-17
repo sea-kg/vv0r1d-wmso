@@ -1,4 +1,9 @@
 
+MENU_BTN_STATE_NO = 0;
+MENU_BTN_STATE_SELECTED = 50;
+MENU_BTN_STATE_PRESSED = 100;
+
+
 class VvRender {
     constructor(canvasid) {
         this.canvas = document.getElementById(canvasid);
@@ -16,12 +21,27 @@ class VvRender {
         this.topLeftRealX = 0;
         this.topLeftRealY = 0;
         this.render_frame_player = {x: 0, y: 0, d: 50, t: 0};
+        this.render_click_mode = null;
         this.player_coordinates = null;
         this.highlight_road = null;
         this.player_target_coordinates = {
             x: 0,
             y: 0
         }
+        this.menu_buttons = [
+            {
+                id: "destroy",
+                image: "menu-modes",
+                state: MENU_BTN_STATE_NO,
+                x: 10,
+                y: 50,
+                dx: 15,
+                ix: 0,
+                iy: 0,
+                iw: 50,
+                ih: 50,
+            }
+        ];
 
         var self = this;
         this.canvas.onmousedown = function(e) {
@@ -36,7 +56,7 @@ class VvRender {
         this.loadImages([
             "borders0",
             "menu-build",
-            "menu-destroy",
+            "menu-modes",
         ], function() {
                 self.draw_borders();
             }
@@ -229,10 +249,18 @@ class VvRender {
         }
 
         // draw menu
-        if (this.cacheImages["menu-destroy"] && this.cacheImages["menu-destroy"].state == 'loaded') {
-            this.ctx.drawImage(this.cacheImages["menu-destroy"].img, 
-                window.innerWidth - this.left_panel_width0 + 50, 
-                50, 50, 50);
+        // console.log("draw menu")
+        for (var i in this.menu_buttons) {
+            var img_name = this.menu_buttons[i].image;
+            if (this.cacheImages[img_name] && this.cacheImages[img_name].state == 'loaded') {
+                // console.log("draw menu 2")
+                this.menu_buttons[i].x = window.innerWidth - this.left_panel_width + this.menu_buttons[i].dx;
+                var btn = this.menu_buttons[i];
+                this.ctx.drawImage(this.cacheImages[img_name].img,
+                    btn.ix + btn.state, btn.iy, btn.iw, btn.ih,
+                    btn.x, btn.y, btn.iw, btn.ih
+                );
+            }
         }
     }
 
@@ -387,14 +415,50 @@ class VvRender {
         );
     }
 
+    is_menu_button(x, y) {
+        if (x > window.innerWidth - this.left_panel_width) {
+            for (var i in this.menu_buttons) {
+                var btn = this.menu_buttons[i];
+                if (
+                    x >= btn.x && x <= btn.x + btn.iw
+                    && y >= btn.y && y <= btn.y + btn.ih
+                ) {
+                    console.log(btn.image);
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     __render_onclick(e) {
         var x = e.offsetX;
         var y = e.offsetY;
         
+        var i = this.is_menu_button(x, y);
+        if (i >= 0) {
+            console.log("clicked")
+            if (this.menu_buttons[i].state == MENU_BTN_STATE_PRESSED) {
+                this.menu_buttons[i].state = MENU_BTN_STATE_NO;
+                this.render_click_mode = null;
+            } else {
+                this.render_click_mode = 'destroy';
+                this.menu_buttons[i].state = MENU_BTN_STATE_PRESSED;
+            }
+            return;
+        }
+
         if (
             y > window.innerHeight - this.bottom_panel_height
             || x > window.innerWidth - this.left_panel_width) {
             return;
+        }
+
+        if (this.render_click_mode == 'destroy') {
+            if (this.highlight_road) {
+                vvapi.ws_destroy_road(this.highlight_road);
+                return;
+            }
         }
 
         // console.log(this.player_coordinates);
@@ -412,24 +476,40 @@ class VvRender {
     __render_onmousemove(e) {
         var x = e.offsetX;
         var y = e.offsetY;
+
+        var i = this.is_menu_button(x, y);
+        if (i >= 0) {
+            if (this.menu_buttons[i].state != MENU_BTN_STATE_PRESSED) {
+                this.menu_buttons[i].state = MENU_BTN_STATE_SELECTED;
+            }
+            return;
+        }
+        for (var i in this.menu_buttons) {
+            if (this.menu_buttons[i].state != MENU_BTN_STATE_PRESSED) {
+                this.menu_buttons[i].state = MENU_BTN_STATE_NO;
+            }
+        }
+
         x = this.topLeftRealX + x;
         y = this.topLeftRealY + y;
 
-        console.log("x,y = ", x, y);
-        // TODO highlight objects
-        var road_highlighted = false;
-        for (var i in this.layer_roads) {
-            var r = this.layer_roads[i];
-            if (
-                x >= r.x && x <= r.x + r.w
-                && y >= r.y && y <= r.y + r.h
-            ) {
-                road_highlighted = true;
-                this.highlight_road = r;
+        if (this.render_click_mode == 'destroy') {
+            // console.log("x,y = ", x, y);
+            // TODO highlight objects
+            var road_highlighted = false;
+            for (var i in this.layer_roads) {
+                var r = this.layer_roads[i];
+                if (
+                    x >= r.x && x <= r.x + r.w
+                    && y >= r.y && y <= r.y + r.h
+                ) {
+                    road_highlighted = true;
+                    this.highlight_road = r;
+                }
             }
-        }
-        if (!road_highlighted) {
-            this.highlight_road = null;
+            if (!road_highlighted) {
+                this.highlight_road = null;
+            }
         }
     }
 

@@ -194,4 +194,9 @@ class VvApi {
         console.log("get_player_position");
         return this.ws_request("get_player_position", {});
     }
+
+    ws_destroy_road(road) {
+        console.log("ws_destroy_road");
+        return this.ws_request("ws_destroy_road", road);
+    }
 };
