@@ -18,7 +18,9 @@ list (APPEND WSJCPP_SOURCES "src/main.cpp")
 #### END_WSJCPP_APPEND
 
 # game
+list (APPEND WSJCPP_SOURCES "./src/game/game_map_object.cpp")
 list (APPEND WSJCPP_SOURCES "./src/game/game_map_objects.cpp")
+list (APPEND WSJCPP_SOURCES "./src/game/game_map_generator.cpp")
 
 # server
 list (APPEND WSJCPP_SOURCES "./src/server/vv_http_server.cpp")

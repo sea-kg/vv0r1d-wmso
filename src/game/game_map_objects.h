@@ -1,22 +1,9 @@
 #ifndef GAME_MAP_OBJECTS_H
 #define GAME_MAP_OBJECTS_H
 
+#include "game_map_object.h"
 #include <string>
 #include <json.hpp>
-
-const int LAYER_BACKGROUND = 1;
-const int LAYER_ROADS = 2;
-const int LAYER_VEGETATION = 3;
-const int LAYER_BUILDING = 4;
-
-
-class GameMapObject {
-    public:
-        GameMapObject();
-
-    private:
-        std::string TAG;
-};
 
 class GameMapObjects {
     public:
@@ -26,6 +13,11 @@ class GameMapObjects {
     private:
         std::string TAG;
         nlohmann::json m_jsonMap;
+        std::vector<GameMapObject *> m_vObjects;
+
+        // TODO
+        // m_vObjects - must be renamed to cache
+        // redesign some fast search by x,y, block must be like 256x256
 };
 
 #endif // GAME_MAP_OBJECTS_H

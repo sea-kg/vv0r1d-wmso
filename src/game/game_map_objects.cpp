@@ -1,18 +1,15 @@
 #include "game_map_objects.h"
 #include <fstream>
 #include <iostream>
-// ---------------------------------------------------------------------
-// GameMapObject
-
-GameMapObject::GameMapObject() {
-    TAG = "GameMapObject";
-}
 
 // ---------------------------------------------------------------------
 // GameMapObjects
 
 GameMapObjects::GameMapObjects() {
     TAG = "GameMapObjects";
+
+    // TODO load from sqlite
+    m_vObjects.push_back(new GameMapObject());
 
     std::ifstream ifs("data/game-map.json");
     nlohmann::json jsonGameMap = nlohmann::json::parse(ifs);
@@ -69,6 +66,11 @@ GameMapObjects::GameMapObjects() {
         jsonMapObject["l"] = LAYER_BUILDING;
         jsonMapObjects.push_back(jsonMapObject);
     }
+
+    for (int i = 0; i < m_vObjects.size(); i++) {
+        jsonMapObjects.push_back(m_vObjects[i]->toJson());
+    }
+    
 
     m_jsonMap["objects"] = jsonMapObjects;
 }
