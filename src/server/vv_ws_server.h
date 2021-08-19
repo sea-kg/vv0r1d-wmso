@@ -9,6 +9,7 @@
 #include "EventLoop.h"
 #include "htime.h"
 #include "hssl.h"
+#include "game_map_objects.h"
 
 class VvWsConnectionContext {
     public:
@@ -26,13 +27,14 @@ class VvWsConnectionContext {
 
 class VvWsServer {
     public:
-        VvWsServer();
+        VvWsServer(GameMapObjects *pGameMapObjects);
         WebSocketService *getService();
     private:
         void onMessage(const WebSocketChannelPtr& channel, const std::string& msg);
 
         std::string TAG;
         WebSocketService m_wsService;
+        GameMapObjects *m_pGameMapObjects;
         std::map<std::string, PlayerContext*> m_mapSessions;
 };
 

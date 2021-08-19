@@ -52,8 +52,9 @@ void VvWsConnectionContext::setPlayerContext(PlayerContext *pPlayerContext) {
 // ---------------------------------------------------------------------
 // VVWsServer
 
-VvWsServer::VvWsServer() {
+VvWsServer::VvWsServer(GameMapObjects *pGameMapObjects) {
     TAG = "VvWsServer";
+    m_pGameMapObjects = pGameMapObjects;
 
     // m_wsService = new WebSocketService();
     m_wsService.onopen = [](const WebSocketChannelPtr& channel, const std::string& url) {
@@ -125,5 +126,23 @@ void VvWsServer::onMessage(const WebSocketChannelPtr& channel, const std::string
         nlohmann::json jsonResult;
         jsonResp["result"] = jsonResult;
         channel->send(jsonResp.dump());
+    } else if (sMethod == "get_map") {
+        nlohmann::json jsonResp;
+        jsonResp["id"] = j["id"];
+        jsonResp["method"] = sMethod;
+        if (ctx->getPlayerContext()) {
+            nlohmann::json jsonResult;
+            int nX = ctx->getPlayerContext()->getPlayerX();
+            int nY = ctx->getPlayerContext()->getPlayerY();
+            jsonResp["result"] = m_pGameMapObjects->toJson(nX - 1000, nY - 1000, 2000, 2000);
+        } else {
+            nlohmann::json jsonError;
+            jsonError["code"] = 550;
+            jsonError["message"] = "Not found error context";
+            jsonResp["error"] = jsonError;
+        }
+        channel->send(jsonResp.dump());
+    } else {
+        std::cout << "Unknown " << sMethod << std::endl;
     }
 }

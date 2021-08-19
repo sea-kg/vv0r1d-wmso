@@ -14,13 +14,8 @@ document.addEventListener("keydown", event => {
 
 window.vvapi = new VvApi();
 
-document.addEventListener('DOMContentLoaded', function(){
-    console.log("Content loaded");
-
-    resize_canvas();
-    window.vvrender = new VvRender('game_window_render');
-
-    vvapi.load_map().done(function(result) {
+function load_first_map(player_coordinates) {
+    vvapi.ws_get_map(player_coordinates).done(function(result) {
         var objects = result["objects"];
         for (var i in objects) {
             var obj = objects[i];
@@ -36,15 +31,23 @@ document.addEventListener('DOMContentLoaded', function(){
                 console.error("Unknown layer")
             }
         }
-        console.log("game_map = ", result);
+        console.log("ws_get_map = ", result);
         vvrender.resized();
         vvrender.update();
     });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    console.log("Content loaded");
+
+    resize_canvas();
+    window.vvrender = new VvRender('game_window_render');
 
     vvapi.ws_get_player_position().done(function(data) {
         console.log("ws_get_player_position: ", data);
         vvrender.player_coordinates = data;
         vvrender.player_target_coordinates = data;
+        load_first_map(vvrender.player_coordinates)
     })
 });
 

@@ -7,6 +7,7 @@
 class GameMapGenerator {
     public:
         GameMapGenerator();
+        void generate(std::vector<GameMapObject *> &vObjects, int nX, int nY, int nW, int nH);
 
     private:
         std::string TAG;

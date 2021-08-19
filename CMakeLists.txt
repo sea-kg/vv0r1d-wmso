@@ -9,6 +9,7 @@ set(EXECUTABLE_OUTPUT_PATH ${vv-server_SOURCE_DIR})
 
 # include header dirs
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
+list (APPEND WSJCPP_INCLUDE_DIRS "src/db")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/game")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/server")
 
@@ -16,6 +17,9 @@ list (APPEND WSJCPP_SOURCES "src/main.cpp")
 
 #### BEGIN_WSJCPP_APPEND
 #### END_WSJCPP_APPEND
+
+# database
+list (APPEND WSJCPP_SOURCES "./src/db/database_map.cpp")
 
 # game
 list (APPEND WSJCPP_SOURCES "./src/game/game_map_object.cpp")

@@ -11,10 +11,19 @@ const int LAYER_BUILDING = 4;
 
 class GameMapObject {
     public:
-        GameMapObject();
+        GameMapObject(
+            int nId, int nX, int nY, int nWidth, int nHeight,
+            int nHealth, int nLayer, bool bCanbeDestroyed,
+            const std::string &sImageTexture,
+            const std::string &sCurrentState
+        );
         const nlohmann::json &toJson();
+        bool containsXY(int x, int y);
+        bool insideRect(int x0, int y0, int x1, int y1);
         int getX();
         int getY();
+        int getWidth();
+        int getHeight();
 
     private:
         std::string TAG;

@@ -6,6 +6,7 @@ vv-server
 .logs/
 src-img/*
 libhv.*.log
+/data/game-map.db
 # Prerequisites
 *.d
 

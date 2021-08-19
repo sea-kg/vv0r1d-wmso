@@ -199,4 +199,8 @@ class VvApi {
         console.log("ws_destroy_road");
         return this.ws_request("ws_destroy_road", road);
     }
+
+    ws_get_map(data) {
+        return this.ws_request("get_map", data);
+    }
 };

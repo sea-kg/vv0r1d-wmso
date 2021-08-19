@@ -17,7 +17,7 @@ VvServer::VvServer(GameMapObjects *pGameMapObjects) {
 }
 
 void VvServer::startSync(int nPort) {
-    VvWsServer wsServer;
+    VvWsServer wsServer(m_pGameMapObjects);
     WebSocketService *pWs = wsServer.getService();
     VvHttpServer httpServer(m_pGameMapObjects);
     HttpService *pRouter = httpServer.getService();

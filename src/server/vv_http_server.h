@@ -10,8 +10,6 @@ class VvHttpServer {
     public:
         VvHttpServer(GameMapObjects *pGameMapObjects);
         HttpService *getService();
-        
-        int httpApiV1GetMap(HttpRequest* req, HttpResponse* resp);
         int httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp);
 
     private:
