@@ -1,0 +1,48 @@
+/* Reset + переменные + body */
+* {
+  box-sizing: border-box;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-app: #0f172a;
+  --bg-panel: #1e293b;
+  --bg-panel-dark: #0b1220;
+  --bg-input: #1e293b;
+  --border: #334155;
+  --border-light: #475569;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-active: #1e40af;
+  --success: #059669;
+  --success-hover: #047857;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --wall: #475569;
+  --wall-dark: #1e293b;
+  --floor: #1e293b;
+  --highlight: #3b82f6;
+  --highlight-drawing: #10b981;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+  --shadow-modal: 0 30px 60px rgba(0,0,0,0.6);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text);
+}
+
+.hidden { display: none !important; }
