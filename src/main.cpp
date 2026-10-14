@@ -36,7 +36,7 @@ int main(int argc, const char* argv[]) {
     if (!wsjcpp::dir_exists(".logs")) {
         WsjcppCore::makeDir(".logs");
     }
-    WsjcppLog::setPrefixLogFile("vv-server");
+    WsjcppLog::setPrefixLogFile("game-server-mmo");
     WsjcppLog::setLogDirectory(".logs");
     WsjcppCore::initRandom();
 

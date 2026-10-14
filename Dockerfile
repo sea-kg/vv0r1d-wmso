@@ -15,4 +15,4 @@ RUN make
 
 WORKDIR /opt/src
 
-CMD ["bash", "-c", "./vv-server"]
+CMD ["bash", "-c", "./game-server-mmo"]

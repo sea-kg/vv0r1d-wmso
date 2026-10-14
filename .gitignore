@@ -2,7 +2,7 @@ db/*
 .DS_Store
 .wsjcpp/
 tmp/
-vv-server
+game-server-mmo
 .logs/
 src-img/*
 libhv.*.log

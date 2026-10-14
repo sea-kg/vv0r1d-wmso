@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(vv-server C CXX)
+project(game-server-mmo C CXX)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/src.wsjcpp/CMakeLists.txt)
 
 set(CMAKE_CXX_STANDARD 17)
-set(EXECUTABLE_OUTPUT_PATH ${vv-server_SOURCE_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${game-server-mmo_SOURCE_DIR})
 
 # include header dirs
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
@@ -57,13 +57,13 @@ list (APPEND WSJCPP_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/src/third_party/sqlite3/
 
 include_directories(${WSJCPP_INCLUDE_DIRS})
 
-add_executable (vv-server ${WSJCPP_SOURCES})
+add_executable (game-server-mmo ${WSJCPP_SOURCES})
 
-target_link_libraries(vv-server ${WSJCPP_LIBRARIES})
+target_link_libraries(game-server-mmo ${WSJCPP_LIBRARIES})
 
 install(
     TARGETS
-        vv-server
+        game-server-mmo
     RUNTIME DESTINATION
         /usr/bin
 )
