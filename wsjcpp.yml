@@ -30,4 +30,10 @@ dependencies:
     origin: "https://github.com/"
     installation-dir: "./src.wsjcpp/sea5kg_logger"
     installation-datetime: "Wed, 14 Oct 2026 14:39:02 GMT"
+  - name: "sea5kg-sqlite3-wrapper"
+    version: "v0.1.1"
+    url: "https://github.com/sea5kg/sea5kg-sqlite3-wrapper:master"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/sea5kg_sqlite3_wrapper"
+    installation-datetime: "Wed, 14 Oct 2026 14:40:31 GMT"
 
