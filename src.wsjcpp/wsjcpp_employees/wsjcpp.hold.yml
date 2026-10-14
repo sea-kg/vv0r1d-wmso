@@ -1,0 +1,39 @@
+name: "wsjcpp-employees"
+version: v0.2.2
+cmake_minimum_required: "3.5"
+cmake_cxx_standard: "17"
+description: "c++ classes for service-architecture"
+
+authors:
+  - name: "Evgenii Sopov"
+    email: "mrseakg@gmail.com"
+
+origins:
+  - address: "https://sea-kg.com/wsjcpp-package-registry/"
+    type: "package-registry"
+
+keywords:
+  - "c++"
+
+distribution:
+  - source-file: "src/wsjcpp_employees.h"
+    target-file: "wsjcpp_employees.h"
+    type: "source-code"
+    sha1: "e911a1d1ea896fa44769d59fa0d18b370197b8e7"
+  - source-file: "src/wsjcpp_employees.cpp"
+    target-file: "wsjcpp_employees.cpp"
+    type: "source-code"
+    sha1: "9b728ff8916bde00b4073562515b9e0d94b6ed54"
+  - source-file: "scripts.wsjcpp/generate.WsjcppEmploy.wsjcpp-script"
+    target-file: "generate.WsjcppEmploy.wsjcpp-script"
+    type: "safe-scripting-generate"
+    sha1: "7f62654157f72abdedf7eb598249e016f23df035"
+
+dependencies:
+  - name: "wsjcpp-core"
+    version: "v0.3.0"
+    url: "https://github.com/wsjcpp/wsjcpp-core:master"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/wsjcpp_core"
+    installation-datetime: "Sat, 15 Aug 2026 06:16:23 GMT"
+
