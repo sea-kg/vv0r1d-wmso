@@ -1,8 +1,8 @@
 
 # TODO
 
-- rename to game-server-mmo
-- ws and rest api ?
+- admin api via /api/
+- ws for clients
 - admin page
 - room constructor
 - make a rooms (via admin page or configs)

@@ -19,18 +19,24 @@ list (APPEND WSJCPP_SOURCES "src/main.cpp")
 #### END_WSJCPP_APPEND
 
 # database
-list (APPEND WSJCPP_SOURCES "./src/db/database_map.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/db/database_map.cpp")
+
+# objects
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/objects/gs_mmo_error_info.cpp")
+
+# employees
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/employees/employ_web_server.cpp")
 
 # game
-list (APPEND WSJCPP_SOURCES "./src/game/game_map_object.cpp")
-list (APPEND WSJCPP_SOURCES "./src/game/game_map_objects.cpp")
-list (APPEND WSJCPP_SOURCES "./src/game/game_map_generator.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_object.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_objects.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_generator.cpp")
 
 # server
-list (APPEND WSJCPP_SOURCES "./src/server/vv_http_server.cpp")
-list (APPEND WSJCPP_SOURCES "./src/server/vv_ws_server.cpp")
-list (APPEND WSJCPP_SOURCES "./src/server/vv_server.cpp")
-list (APPEND WSJCPP_SOURCES "./src/server/player_context.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_http_server.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_ws_server.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_server.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/player_context.cpp")
 
 # libhv
 set(WITH_OPENSSL OFF CACHE BOOL "")
