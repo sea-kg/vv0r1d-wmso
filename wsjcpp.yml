@@ -37,3 +37,10 @@ dependencies:
     installation-dir: "./src.wsjcpp/sea5kg_sqlite3_wrapper"
     installation-datetime: "Wed, 14 Oct 2026 14:40:31 GMT"
 
+  - name: "wsjcpp-yaml"
+    version: "v0.1.10"
+    url: "https://github.com/wsjcpp/wsjcpp-yaml:master"
+    origin: "https://github.com/"
+    installation-dir: "./src.wsjcpp/wsjcpp_yaml"
+    installation-datetime: "Thu, 15 Oct 2026 03:11:15 GMT"
+

@@ -1,0 +1,32 @@
+wsjcpp_version: v0.2.4
+cmake_minimum_required: 3.0
+cmake_cxx_standard: 11
+name: wsjcpp-yaml
+version: v0.1.10
+description: Read/Write yaml files
+issues: https://github.com/wsjcpp/wsjcpp-yaml/issues
+
+repositories:
+  - type: main
+    url: "https://github.com/wsjcpp/wsjcpp-yaml"
+keywords:
+  - c++
+  - yaml
+  - parser
+  - reader
+  - writer
+
+authors:
+  - name: Evgenii Sopov
+    email: mrseakg@gmail.com
+
+distribution:
+  - source-file: src/wsjcpp_yaml.cpp
+    target-file: wsjcpp_yaml.cpp
+    type: "source-code"
+    sha1: "b729764f29f3b291fc0b98e32961f0bfe68383ea"
+  - source-file: src/wsjcpp_yaml.h
+    target-file: wsjcpp_yaml.h
+    type: "source-code"
+    sha1: "566de8251d67e46aad480809d06320c562a09ef5"
+
