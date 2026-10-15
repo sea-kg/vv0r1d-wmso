@@ -1,33 +1,75 @@
-#include <fstream>
+/**********************************************************************************
+ * ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ * ::                                   oooooo 8                                 ::
+ * ::                                   8      8                                 ::
+ * ::              .oPYo. .oPYo. .oPYo. 8pPYo. 8  .o  .oPYo.                     ::
+ * ::              Yb..   8oooo8 .oooo8     `8 8oP'   8    8                     ::
+ * ::                'Yb. 8.     8    8     .P 8 `b.  8    8                     ::
+ * ::              `YooP' `Yooo' `YooP8 `YooP' 8  `o. `YooP8                     ::
+ * :::::::::::::::::.....::.....::.....::.....:..::...:....8 ::::::::::::::::::::::
+ * :::::::::::::::::::::::::::::::::::::::::::::::::::::ooP'.::::::::::::::::::::::
+ * :: .oPYo. .oPYo. ooYoYo. .oPYo.       .oPYo. .oPYo. oPYo. o    o .oPYo. oPYo. ::
+ * :: 8    8 .oooo8 8' 8  8 8oooo8 ooooo Yb..   8oooo8 8  `' Y.  .P 8oooo8 8  `' ::
+ * :: 8    8 8    8 8  8  8 8.             'Yb. 8.     8     `b..d' 8.     8     ::
+ * :: `YooP8 `YooP8 8  8  8 `Yooo'       `YooP' `Yooo' 8      `YP'  `Yooo' 8     ::
+ * ::::....8 :.....:..:..:..:.....::::::::.....::.....:..::::::...:::.....:..::::::
+ * :::::ooP'.:::::::ooYoYo. ooYoYo. .oPYo.                                       ::
+ * ::               8' 8  8 8' 8  8 8    8                                       ::
+ * ::               8  8  8 8  8  8 8    8                                       ::
+ * ::               8  8  8 8  8  8 `YooP'                                       ::
+ * :::::::::::::::::..:..:....:..:..:.....:::::::::::::::::::::::::::::::::::::::::
+ * ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020-2026 Evgenii Sopov
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Original repository: https://github.com/sea5kg/sea5kg-game-server-mmo
+ *
+ ***********************************************************************************/
+
 #include <atomic>
 #include <cstring>
+#include <fstream>
 #include <initializer_list>
 #include <optional>
 #include <regex>
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <wsjcpp_employees.h>
 #include <wsjcpp_core.h>
-// #include "include/ctf01d_globals.h"
-#include "include/gs_mmo_web_server.h"
-// #include "include/ctf01d_activities.h"
-// #include "include/ctf01d_config.h"
-// #include "include/ctf01d_metrics.h"
-// #include "include/ctf01d_scoreboard.h"
-// #include "include/ctf01d_alive_flags.h"
-// #include "include/ctf01d_images.h"
+#include <wsjcpp_employees.h>
+#include "gs_mmo/include/gs_mmo_globals.h"
+#include "gs_mmo/include/gs_mmo_web_server.h"
+#include "gs_mmo/include/gs_mmo_config.h"
 #include <sea5kg_logger.h>
-// #include "ctf01d/objects/ctf01d_service_status_cell.h"
 #include "objects/gs_mmo_error_info.h"
 
 // libhv includes
-#include "HttpService.h" // libhv
-#include "WebSocketServer.h"  // libhv
-#include "EventLoop.h"  // libhv
-#include "htime.h"  // libhv
-#include "hssl.h"  // libhv
-#include "hlog.h"  // libhv
+#include "EventLoop.h"       // libhv
+#include "HttpService.h"     // libhv
+#include "WebSocketServer.h" // libhv
+#include "hlog.h"            // libhv
+#include "hssl.h"            // libhv
+#include "htime.h"           // libhv
 
 class employ_web_server : public WsjcppEmployBase, public gs_mmo::web_server {
 public:
@@ -41,25 +83,25 @@ public:
 private:
   std::string TAG;
 
-  int response_error(int http_code, HttpRequest* req, HttpResponse* resp, const gs_mmo::error_info &err);
+  int response_error(int http_code, HttpRequest *req, HttpResponse *resp, const gs_mmo::error_info &err);
   void log_err(const std::string &message);
   void log_warn(const std::string &message);
   void updateJsonCache();
 
-  int httpWebFolder(HttpRequest* req, HttpResponse* resp);
-  int httpApiV1Game(HttpRequest* req, HttpResponse* resp);
-  int httpApiGameCurrentTime(HttpRequest* req, HttpResponse* resp);
-  int httpApiV1Teams(HttpRequest* req, HttpResponse* resp);
-  int httpApiV1MyIp(HttpRequest* req, HttpResponse* resp);
-  int httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp);
-  int httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp);
+  int httpWebFolder(HttpRequest *req, HttpResponse *resp);
+  int httpApiV1Game(HttpRequest *req, HttpResponse *resp);
+  int httpApiGameCurrentTime(HttpRequest *req, HttpResponse *resp);
+  int httpApiV1Teams(HttpRequest *req, HttpResponse *resp);
+  int httpApiV1MyIp(HttpRequest *req, HttpResponse *resp);
+  int httpApiV1Scoreboard(HttpRequest *req, HttpResponse *resp);
+  int httpApiV1GetPaths(HttpRequest *req, HttpResponse *resp);
 
-  bool can_handle_flags(HttpRequest* req, int current_time_in_seconds, gs_mmo::error_info &err);
-  bool find_or_detect_team_id(HttpRequest* req, std::string &team_id, gs_mmo::error_info &err);
-  int httpApiV1Flag(HttpRequest* req, HttpResponse* resp);
+  bool can_handle_flags(HttpRequest *req, int current_time_in_seconds, gs_mmo::error_info &err);
+  bool find_or_detect_team_id(HttpRequest *req, std::string &team_id, gs_mmo::error_info &err);
+  int httpApiV1Flag(HttpRequest *req, HttpResponse *resp);
 
   // int httpApiV1Metrics(HttpRequest* req, HttpResponse* resp);
-  int httpLogo(const std::string &request_path, HttpRequest* req, HttpResponse* resp);
+  int httpLogo(const std::string &request_path, HttpRequest *req, HttpResponse *resp);
 
   std::shared_ptr<hv::HttpService> m_pHttpService;
   std::string m_sApiPathPrefix;
@@ -72,23 +114,21 @@ private:
   // std::string m_sCacheResponseGameJson;
   // std::string m_sCacheResponseTeamsJson;
 
-  // gs_mmo::config *m_config;
+  gs_mmo::config *m_config;
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 
-employ_web_server::employ_web_server()
-// gs_mmo::config::name()
-: WsjcppEmployBase({ gs_mmo::web_server::name() }, { }) {
+employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::name()}, {gs_mmo::config::name()}) {
   TAG = gs_mmo::web_server::name();
   m_sApiPathPrefix = "/api/v1/";
 
-  // m_config = nullptr;
+  m_config = nullptr;
 }
 
 bool employ_web_server::init(const std::string &name, bool silent) {
   sea5kg::log::info(TAG, "init");
-  // m_config = findWsjcppEmploy<gs_mmo::config>();
+  m_config = findWsjcppEmploy<gs_mmo::config>();
 
   return true;
 }
@@ -97,7 +137,6 @@ bool employ_web_server::deinit(const std::string &name, bool silent) {
   sea5kg::log::info(TAG, "deinit");
   return true;
 }
-
 
 static std::shared_ptr<sea5kg::logger> g_http_logger = std::shared_ptr<sea5kg::logger>(sea5kg::logger::create());
 
@@ -141,8 +180,7 @@ int employ_web_server::start() {
   // m_sScoreboardHtmlFolder = pEmployConfig->scoreboard_html_folder();
   // updateJsonCache();
 
-  // std::string starting_message = "Starting scoreboard on http://localhost:" + std::to_string(pEmployConfig->scoreboard_port()) + "/";
-  std::string starting_message = "Starting scoreboard on http://localhost:" + std::to_string(1234) + "/";
+  std::string starting_message = "Starting scoreboard on http://localhost:" + std::to_string(m_config->web_port()) + "/";
   g_http_logger->success(TAG, starting_message);
   sea5kg::log::success(TAG, starting_message);
 
@@ -159,11 +197,13 @@ int employ_web_server::start() {
 
   // static files
   m_pHttpService->document_root = "./html";
-  m_pHttpService->GET("*", std::bind(&employ_web_server::httpWebFolder, this, std::placeholders::_1, std::placeholders::_2));
+  m_pHttpService->GET(
+    "*", std::bind(&employ_web_server::httpWebFolder, this, std::placeholders::_1, std::placeholders::_2)
+  );
 
   hv::HttpServer server(m_pHttpService.get());
   // server.setPort(pEmployConfig->scoreboard_port());
-  server.setPort(1234);
+  server.setPort(m_config->web_port());
   server.setThreadNum(4);
   server.run();
 
@@ -178,8 +218,11 @@ int employ_web_server::start() {
   return 0;
 }
 
-int employ_web_server::response_error(int http_code, HttpRequest* req, HttpResponse* resp, const gs_mmo::error_info &err) {
-  std::string error_message = " Error(" + std::to_string(err.error_code()) + "): " + err.error_msg() + " (" + req->client_addr.ip + ")";
+int employ_web_server::response_error(
+  int http_code, HttpRequest *req, HttpResponse *resp, const gs_mmo::error_info &err
+) {
+  std::string error_message =
+    " Error(" + std::to_string(err.error_code()) + "): " + err.error_msg() + " (" + req->client_addr.ip + ")";
   log_err(error_message);
   resp->String(error_message);
   return http_code;
@@ -205,10 +248,10 @@ void employ_web_server::updateJsonCache() {
   // jsonGame["game_start"] = WsjcppCore::formatTimeUTC(m_config->game_start_utc_in_seconds()) + " (UTC)";
   // jsonGame["game_end"] = WsjcppCore::formatTimeUTC(m_config->game_end_utc_in_seconds()) + " (UTC)";
   // jsonGame["game_has_coffee_break"] = m_config->game_has_coffee_break();
-  // jsonGame["game_coffee_break_start"] = WsjcppCore::formatTimeUTC(m_config->game_coffee_break_start_utc_in_seconds()) + " (UTC)";
-  // jsonGame["game_coffee_break_end"] = WsjcppCore::formatTimeUTC(m_config->game_coffee_break_end_utc_in_seconds()) + " (UTC)";
-  // jsonGame["teams"] = nlohmann::json::array();
-  // jsonGame["services"] = nlohmann::json::array();
+  // jsonGame["game_coffee_break_start"] = WsjcppCore::formatTimeUTC(m_config->game_coffee_break_start_utc_in_seconds())
+  // + " (UTC)"; jsonGame["game_coffee_break_end"] =
+  // WsjcppCore::formatTimeUTC(m_config->game_coffee_break_end_utc_in_seconds()) + " (UTC)"; jsonGame["teams"] =
+  // nlohmann::json::array(); jsonGame["services"] = nlohmann::json::array();
 
   // for (unsigned int i = 0; i < m_config->services().size(); i++) {
   //   gs_mmo::service_config service_config = m_config->services()[i];
@@ -232,7 +275,7 @@ void employ_web_server::updateJsonCache() {
   // m_sCacheResponseTeamsJson = jsonTeams.dump();
 }
 
-int employ_web_server::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
   // std::string sOriginalRequestPath = req->path;
   // std::string request_path;
 
@@ -261,11 +304,13 @@ int employ_web_server::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
   //     return this->httpApiGameCurrentTime(req, resp);
   //   } else if (request_path == "/api/v1/scoreboard") { // Public endpoint. Allowed without authorization.
   //     return this->httpApiV1Scoreboard(req, resp);
-  //   } else if (request_path == "/api/v1/my-ip") { // it's ok. Because network game is public space. This endpoint need for automatic configuration network.
+  //   } else if (request_path == "/api/v1/my-ip") { // it's ok. Because network game is public space. This endpoint
+  //   need for automatic configuration network.
   //     return this->httpApiV1MyIp(req, resp);
   //   } else if (request_path == "/api/v1/teams") { // Public endpoint. Allowed without authorization.
   //     return this->httpApiV1Teams(req, resp);
-  //   } else if (request_path == "/api/v1/metrics" && m_metrics_enabled.load()) { // Config-gated: disabled by default + IP allowlist (see httpApiV1Metrics).
+  //   } else if (request_path == "/api/v1/metrics" && m_metrics_enabled.load()) { // Config-gated: disabled by default
+  //   + IP allowlist (see httpApiV1Metrics).
   //     return this->httpApiV1Metrics(req, resp);
   //   }
   //   return 404;
@@ -297,7 +342,7 @@ int employ_web_server::httpWebFolder(HttpRequest* req, HttpResponse* resp) {
   return 404; // Not found
 }
 
-int employ_web_server::httpApiV1Game(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1Game(HttpRequest *req, HttpResponse *resp) {
   // // std::cout << m_sCacheResponseGameJson << std::endl;
   // resp->Data(
   //   (void *)(m_sCacheResponseGameJson.c_str()),
@@ -308,7 +353,7 @@ int employ_web_server::httpApiV1Game(HttpRequest* req, HttpResponse* resp) {
   return 200;
 }
 
-int employ_web_server::httpApiGameCurrentTime(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiGameCurrentTime(HttpRequest *req, HttpResponse *resp) {
   // // TODO maybe need optimization keep json response for every second.
   // auto now = std::chrono::system_clock::now().time_since_epoch();
   // int nCurrentTimeSec = std::chrono::duration_cast<std::chrono::seconds>(now).count();
@@ -324,7 +369,7 @@ int employ_web_server::httpApiGameCurrentTime(HttpRequest* req, HttpResponse* re
   return 200;
 }
 
-int employ_web_server::httpApiV1Teams(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1Teams(HttpRequest *req, HttpResponse *resp) {
   // resp->Data(
   //   (void *)(m_sCacheResponseTeamsJson.c_str()),
   //   m_sCacheResponseTeamsJson.length(),
@@ -334,12 +379,12 @@ int employ_web_server::httpApiV1Teams(HttpRequest* req, HttpResponse* resp) {
   return 200;
 }
 
-int employ_web_server::httpApiV1MyIp(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1MyIp(HttpRequest *req, HttpResponse *resp) {
   resp->json["my-ip"] = req->client_addr.ip;
   return 200;
 }
 
-int employ_web_server::httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1Scoreboard(HttpRequest *req, HttpResponse *resp) {
   // auto teamLogos = findWsjcppEmploy<gs_mmo::images>();
   // teamLogos->update_last_change_time();
 
@@ -355,12 +400,12 @@ int employ_web_server::httpApiV1Scoreboard(HttpRequest* req, HttpResponse* resp)
   return 200;
 }
 
-int employ_web_server::httpApiV1GetPaths(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1GetPaths(HttpRequest *req, HttpResponse *resp) {
   // TODO
   return resp->Json(m_pHttpService->Paths());
 }
 
-bool employ_web_server::can_handle_flags(HttpRequest* req, int current_time_in_seconds, gs_mmo::error_info &err) {
+bool employ_web_server::can_handle_flags(HttpRequest *req, int current_time_in_seconds, gs_mmo::error_info &err) {
   // if (current_time_in_seconds < m_config->game_start_utc_in_seconds()) {
   //   err = gs_mmo::error_info(2001, "Game not started yet");
   //   return false;
@@ -381,7 +426,7 @@ bool employ_web_server::can_handle_flags(HttpRequest* req, int current_time_in_s
   return true;
 }
 
-bool employ_web_server::find_or_detect_team_id(HttpRequest* req, std::string &team_id, gs_mmo::error_info &err) {
+bool employ_web_server::find_or_detect_team_id(HttpRequest *req, std::string &team_id, gs_mmo::error_info &err) {
   // team_id = "";
   // std::string request_ip = req->client_addr.ip;
   // if (!m_auto_detection_team_id_by_subnet_ip.load()) {
@@ -412,7 +457,7 @@ bool employ_web_server::find_or_detect_team_id(HttpRequest* req, std::string &te
   return true;
 }
 
-int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpApiV1Flag(HttpRequest *req, HttpResponse *resp) {
   // auto now = std::chrono::system_clock::now().time_since_epoch();
   // int current_time_in_seconds = std::chrono::duration_cast<std::chrono::seconds>(now).count();
   // long current_time_in_milliseconds = long(current_time_in_seconds)*1000;
@@ -442,8 +487,9 @@ int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
   // }
 
   // // TODO test speed of regexp and if will be simple compare every symbol.
-  // const static std::regex reFlagFormat("c01d[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}[0-9]{8,8}");
-  // if (!std::regex_match(flag_value, reFlagFormat)) {
+  // const static std::regex
+  // reFlagFormat("c01d[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}-[a-f0-9]{4,4}[0-9]{8,8}"); if
+  // (!std::regex_match(flag_value, reFlagFormat)) {
   //   // TODO server statistics
   //   static const std::string sErrorMsg = "Error(-140): flag has wrong format";
   //   log_err(sErrorMsg + sRequestIP_MsgSuffix);
@@ -457,9 +503,8 @@ int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
   // if (!findWsjcppEmploy<gs_mmo::alive_flags>()->find_alive_flag(flag_value, flag)) {
   //   // TODO server statistics
   //   static const std::string sErrorMsg = "Error(-150): flag is too old or flag never existed or flag already stole.";
-  //   g_http_logger->info(TAG, sErrorMsg + ". Received flag {" + flag_value + "} from {" + team_id + "}" + sRequestIP_MsgSuffix);
-  //   resp->String(sErrorMsg);
-  //   return 403;
+  //   g_http_logger->info(TAG, sErrorMsg + ". Received flag {" + flag_value + "} from {" + team_id + "}" +
+  //   sRequestIP_MsgSuffix); resp->String(sErrorMsg); return 403;
   // }
 
   // if (flag.time_end_in_milliseconds() < current_time_in_milliseconds) {
@@ -472,7 +517,8 @@ int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
 
   // // if (flag.teamStole() == team_id) {
   // //   response.forbidden().sendText("Error(-160): flag already stole by your team");
-  // //   log_err("Error(-160): Received flag {" + flag_value + "} from {" + team_id + "} (flag already stole by your team)");
+  // //   log_err("Error(-160): Received flag {" + flag_value + "} from {" + team_id + "} (flag already stole by your
+  // team)");
   // //   return true;
   // // }
 
@@ -509,7 +555,8 @@ int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
   // }
   // std::string sPoints = std::to_string(oPoints.value());
 
-  // std::string sResponse = "Accepted: Received flag {" + flag_value + "} from {" + team_id + "} (Accepted + " + sPoints + ")";
+  // std::string sResponse = "Accepted: Received flag {" + flag_value + "} from {" + team_id + "} (Accepted + " +
+  // sPoints + ")";
   // // really need send to current ???
   // g_http_logger->success(TAG, sResponse + sRequestIP_MsgSuffix);
   // sea5kg::log::success(TAG, sResponse + sRequestIP_MsgSuffix);
@@ -522,7 +569,7 @@ int employ_web_server::httpApiV1Flag(HttpRequest* req, HttpResponse* resp) {
   return 200;
 }
 
-int employ_web_server::httpLogo(const std::string &request_path, HttpRequest* req, HttpResponse* resp) {
+int employ_web_server::httpLogo(const std::string &request_path, HttpRequest *req, HttpResponse *resp) {
   // TODO refactoring it
 
   // std::string id = request_path.substr(m_logo_prefix_length, request_path.length() - m_logo_prefix_length);
@@ -539,5 +586,4 @@ int employ_web_server::httpLogo(const std::string &request_path, HttpRequest* re
   // );
   // resp->SetContentTypeByFilename(img->filename().c_str());
   return 200;
-
 }

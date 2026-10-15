@@ -1,3 +1,51 @@
+/**********************************************************************************
+ * ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ * ::                                   oooooo 8                                 ::
+ * ::                                   8      8                                 ::
+ * ::              .oPYo. .oPYo. .oPYo. 8pPYo. 8  .o  .oPYo.                     ::
+ * ::              Yb..   8oooo8 .oooo8     `8 8oP'   8    8                     ::
+ * ::                'Yb. 8.     8    8     .P 8 `b.  8    8                     ::
+ * ::              `YooP' `Yooo' `YooP8 `YooP' 8  `o. `YooP8                     ::
+ * :::::::::::::::::.....::.....::.....::.....:..::...:....8 ::::::::::::::::::::::
+ * :::::::::::::::::::::::::::::::::::::::::::::::::::::ooP'.::::::::::::::::::::::
+ * :: .oPYo. .oPYo. ooYoYo. .oPYo.       .oPYo. .oPYo. oPYo. o    o .oPYo. oPYo. ::
+ * :: 8    8 .oooo8 8' 8  8 8oooo8 ooooo Yb..   8oooo8 8  `' Y.  .P 8oooo8 8  `' ::
+ * :: 8    8 8    8 8  8  8 8.             'Yb. 8.     8     `b..d' 8.     8     ::
+ * :: `YooP8 `YooP8 8  8  8 `Yooo'       `YooP' `Yooo' 8      `YP'  `Yooo' 8     ::
+ * ::::....8 :.....:..:..:..:.....::::::::.....::.....:..::::::...:::.....:..::::::
+ * :::::ooP'.:::::::ooYoYo. ooYoYo. .oPYo.                                       ::
+ * ::               8' 8  8 8' 8  8 8    8                                       ::
+ * ::               8  8  8 8  8  8 8    8                                       ::
+ * ::               8  8  8 8  8  8 `YooP'                                       ::
+ * :::::::::::::::::..:..:....:..:..:.....:::::::::::::::::::::::::::::::::::::::::
+ * ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+ *
+ * MIT License
+ *
+ * Copyright (c) 2020-2026 Evgenii Sopov
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Original repository: https://github.com/sea5kg/sea5kg-game-server-mmo
+ *
+ ***********************************************************************************/
+
 #include <string.h>
 #include <iostream>
 #include <algorithm>
@@ -10,8 +58,8 @@
 #include <sqlite3.h>
 #include "vv_server.h"
 #include "database_map.h"
-// #include "include/ctf01d_config.h"
-#include "include/gs_mmo_web_server.h"
+#include "gs_mmo/include/gs_mmo_config.h"
+#include "gs_mmo/include/gs_mmo_web_server.h"
 
 std::vector<std::string> argumentsToVector(int argc, const char* argv[]) {
   std::vector<std::string> ret;
@@ -46,7 +94,7 @@ bool findWorkDir(std::vector<std::string> &arguments, std::string &workDir) {
   }
 
   // Anyway, try read from environment. And override from args.
-  if (WsjcppCore::getEnv("CTF01D_WORKDIR", workDir)) {
+  if (WsjcppCore::getEnv("GS_MMO_WORKDIR", workDir)) {
     std::cout << "Working directory get from environment variable CTF01D_WORKDIR: " << workDir << std::endl;
     return true;
   }
@@ -55,7 +103,7 @@ bool findWorkDir(std::vector<std::string> &arguments, std::string &workDir) {
   if (!found) {
     std::vector<std::string> vPossibleFolders = {
       tryResolveRelativePath("./"),
-      tryResolveRelativePath("./data_sample/"),
+      tryResolveRelativePath("./data/"),
       tryResolveRelativePath("/root/data/")
     };
 
@@ -101,8 +149,7 @@ void printHelp(const std::string &programName) {
     << "  --help, -help, help, -h                Print help and exit" << std::endl
     << std::endl
     << "COMMANDS:" << std::endl
-    << "  web-test                               Start alone http server for test" << std::endl
-    << "  start                                  Start ctf01d attack-defense jury system." << std::endl
+    << "  start                                  Start game." << std::endl
     << std::endl
   ;
 }
@@ -142,18 +189,18 @@ bool try_apply_ctf01d_user(const std::string &work_dir) {
   // std::cout << "work_dir = " << work_dir << std::endl;
   std::string str_user;
   int user_id = 0;
-  if (WsjcppCore::getEnv("CTF01D_USER", str_user)) {
-    std::cout << "CTF01D_USER='" << str_user << "'" << std::endl;
+  if (WsjcppCore::getEnv("GS_MMO_USER", str_user)) {
+    std::cout << "GS_MMO_USER='" << str_user << "'" << std::endl;
     try {
       user_id = std::stoi(str_user);
     } catch (const std::invalid_argument& e) {
-      std::cerr << "Error: No conversion could be performed. CTF01D_USER='" << str_user << "'" << std::endl;
+      std::cerr << "Error: No conversion could be performed. GS_MMO_USER='" << str_user << "'" << std::endl;
       return false;
     } catch (const std::out_of_range& e) {
-      std::cerr << "The converted value is too big for an int.. CTF01D_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. GS_MMO_USER='" << str_user << "'" << std::endl;
       return false;
     } catch (...) {
-      std::cerr << "The converted value is too big for an int.. CTF01D_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. GS_MMO_USER='" << str_user << "'" << std::endl;
       return false;
     }
     if (is_root()) {
@@ -167,7 +214,7 @@ bool try_apply_ctf01d_user(const std::string &work_dir) {
       }
       return change_privileges(user_id);
     } else if (geteuid() == user_id) {
-      std::cout << " * OK. CTF01D_USER is equal with current user" << std::endl;
+      std::cout << " * OK. GS_MMO_USER is equal with current user" << std::endl;
     } else {
       return change_privileges(user_id);
     }
@@ -234,9 +281,9 @@ int main(int argc, const char* argv[]) {
     try_apply_ctf01d_user(sWorkDir);
 
     std::cout << "WorkDir: " << sWorkDir << std::endl;
-    // auto config = findWsjcppEmploy<ctf01d::config>();
-    // config->set_work_dir(sWorkDir);
-    // config->set_ctf01d_version(appVersion);
+    auto config = findWsjcppEmploy<gs_mmo::config>();
+    config->set_work_dir(sWorkDir);
+    config->set_app_version(appVersion);
 
     if (arguments.size() == 0) {
         std::cout << "Not found command. Please run '" << programName << " help'" << std::endl;
@@ -250,24 +297,12 @@ int main(int argc, const char* argv[]) {
 
     std::string command = arguments[0];
 
-    if (command == "web-test") {
-        sea5kg::log::info(TAG, "Web Test...");
-        if (!WsjcppEmployees::init({})) {
-            sea5kg::log::error(TAG, "Failed.");
-            return -1;
-        }
-        return findWsjcppEmploy<gs_mmo::web_server>()->start();
-    }
-
     if (command == "start") {
         sea5kg::log::info(TAG, "Starting...");
         if (!WsjcppEmployees::init({})) {
-        sea5kg::log::error(TAG, "Start failed on step init configs.");
-        return -1;
+          sea5kg::log::error(TAG, "Start failed on step init configs.");
+          return -1;
         }
-
-        // signal( SIGINT, quitApp );
-        // signal( SIGTERM, quitApp );
 
         // std::vector<ctf01d::service_checker_thread *> vThreads;
         // sea5kg::log::info(TAG, "Starting threads...");
