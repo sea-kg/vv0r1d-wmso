@@ -60,7 +60,6 @@
 #include <sea5kg_logger.h>
 #include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_config.h"
-// #include "ctf01d/include/ctf01d_web_server.h"
 #include "third_party/smallsha1/smallsha1.h"
 #include "third_party/HowardHinnant/date.h"
 #include <sys/stat.h>
@@ -271,54 +270,54 @@ std::string employ_config::html_folder() const {
   // return m_scoreboard_html_folder->value();
 }
 
-// // helper
-// std::string sha1_by_string(const std::string &data) {
-//   char hexstring[41]; // 40 chars + a zero
-//   std::memset(hexstring, 0, sizeof hexstring);
+// helper
+std::string sha1_by_string(const std::string &data) {
+  char hexstring[41]; // 40 chars + a zero
+  std::memset(hexstring, 0, sizeof hexstring);
 
-//   unsigned char hash[20];
-//   sha1::calc(data.c_str(), data.length(), hash);
-//   sha1::toHexString(hash, hexstring);
-//   return std::string(hexstring);
-// }
+  unsigned char hash[20];
+  sha1::calc(data.c_str(), data.length(), hash);
+  sha1::toHexString(hash, hexstring);
+  return std::string(hexstring);
+}
 
-// std::string sha1_by_data(const char *data, int len) {
-//   char hexstring[41]; // 40 chars + a zero
-//   std::memset(hexstring, 0, sizeof hexstring);
+std::string sha1_by_data(const char *data, int len) {
+  char hexstring[41]; // 40 chars + a zero
+  std::memset(hexstring, 0, sizeof hexstring);
 
-//   unsigned char hash[20];
-//   sha1::calc(data, len, hash);
-//   sha1::toHexString(hash, hexstring);
-//   return std::string(hexstring);
-// }
+  unsigned char hash[20];
+  sha1::calc(data, len, hash);
+  sha1::toHexString(hash, hexstring);
+  return std::string(hexstring);
+}
 
-// std::string sha1_by_file(const std::string &sFilename) {
-//   std::ifstream f(sFilename, std::ifstream::binary);
-//   if (!f) {
-//     return "Could not open file";
-//   }
-//   // get length of file:
-//   f.seekg (0, f.end);
-//   int nBufferSize = f.tellg();
-//   f.seekg (0, f.beg);
-//   char *pBuffer = new char [nBufferSize];
-//   // read data as a block:
-//   f.read(pBuffer, nBufferSize);
-//   if (!f) {
-//     delete[] pBuffer;
-//     // f.close();
-//     sea5kg::log::critical("sha1_by_file", "Could not read file. Only " + std::to_string(f.gcount()) + " could be read");
-//     return "";
-//   }
-//   f.close();
-//   char hexstring[41]; // 40 chars + a zero
-//   std::memset(hexstring, 0, sizeof hexstring);
-//   unsigned char hash[20];
-//   sha1::calc(pBuffer, nBufferSize, hash);
-//   sha1::toHexString(hash, hexstring);
-//   delete[] pBuffer;
-//   return std::string(hexstring);
-// }
+std::string sha1_by_file(const std::string &sFilename) {
+  std::ifstream f(sFilename, std::ifstream::binary);
+  if (!f) {
+    return "Could not open file";
+  }
+  // get length of file:
+  f.seekg (0, f.end);
+  int nBufferSize = f.tellg();
+  f.seekg (0, f.beg);
+  char *pBuffer = new char [nBufferSize];
+  // read data as a block:
+  f.read(pBuffer, nBufferSize);
+  if (!f) {
+    delete[] pBuffer;
+    // f.close();
+    sea5kg::log::critical("sha1_by_file", "Could not read file. Only " + std::to_string(f.gcount()) + " could be read");
+    return "";
+  }
+  f.close();
+  char hexstring[41]; // 40 chars + a zero
+  std::memset(hexstring, 0, sizeof hexstring);
+  unsigned char hash[20];
+  sha1::calc(pBuffer, nBufferSize, hash);
+  sha1::toHexString(hash, hexstring);
+  delete[] pBuffer;
+  return std::string(hexstring);
+}
 
 void employ_config::update_files_in_data() {
   std::string sError;

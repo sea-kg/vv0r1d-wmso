@@ -18,6 +18,9 @@ list (APPEND WSJCPP_SOURCES "src/main.cpp")
 #### BEGIN_WSJCPP_APPEND
 #### END_WSJCPP_APPEND
 
+# third_party
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/third_party/smallsha1/smallsha1.cpp")
+
 # database
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/db/database_map.cpp")
 
