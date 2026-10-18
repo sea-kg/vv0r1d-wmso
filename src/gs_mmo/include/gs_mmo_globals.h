@@ -55,7 +55,11 @@ static const int MAX_TCP_PORT = 65435;
 
 class keys {
 public:
+  inline static const std::string GS_MMO_USER = "GS_MMO_USER";
   inline static const std::string GS_MMO_PORT = "GS_MMO_PORT";
+  inline static const std::string SERVER = "server";
+  inline static const std::string WEB_PORT = "web-port";
+  inline static const std::string HTML_FOLDER = "html-folder";
 };
 
 } // namespace gs_mmo

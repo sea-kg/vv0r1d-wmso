@@ -58,6 +58,7 @@
 #include <sqlite3.h>
 #include "vv_server.h"
 #include "database_map.h"
+#include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_config.h"
 #include "gs_mmo/include/gs_mmo_web_server.h"
 
@@ -144,9 +145,9 @@ void printHelp(const std::string &programName) {
     << std::endl
     << "OPTIONS:" << std::endl
     << "  --work-dir, -work-dir, -wd, -w path         Custom workspace folder with configs, logging, " << std::endl
-    << "                                         checker scripts and etc. (env: CTF01D_WORKDIR)" << std::endl
-    << "  --version, -version, -v, version       Print version and exit" << std::endl
-    << "  --help, -help, help, -h                Print help and exit" << std::endl
+    << "                                              checker scripts and etc. (env: GS_MMO_WORKDIR)" << std::endl
+    << "  --version, -version, -v, version            Print version and exit" << std::endl
+    << "  --help, -help, help, -h                     Print help and exit" << std::endl
     << std::endl
     << "COMMANDS:" << std::endl
     << "  start                                  Start game." << std::endl
@@ -189,18 +190,18 @@ bool try_apply_ctf01d_user(const std::string &work_dir) {
   // std::cout << "work_dir = " << work_dir << std::endl;
   std::string str_user;
   int user_id = 0;
-  if (WsjcppCore::getEnv("GS_MMO_USER", str_user)) {
-    std::cout << "GS_MMO_USER='" << str_user << "'" << std::endl;
+  if (WsjcppCore::getEnv(gs_mmo::keys::GS_MMO_USER, str_user)) {
+    std::cout << gs_mmo::keys::GS_MMO_USER << "='" << str_user << "'" << std::endl;
     try {
       user_id = std::stoi(str_user);
     } catch (const std::invalid_argument& e) {
-      std::cerr << "Error: No conversion could be performed. GS_MMO_USER='" << str_user << "'" << std::endl;
+      std::cerr << "Error: No conversion could be performed. " << gs_mmo::keys::GS_MMO_USER << "='" << str_user << "'" << std::endl;
       return false;
     } catch (const std::out_of_range& e) {
-      std::cerr << "The converted value is too big for an int.. GS_MMO_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. " << gs_mmo::keys::GS_MMO_USER << "='" << str_user << "'" << std::endl;
       return false;
     } catch (...) {
-      std::cerr << "The converted value is too big for an int.. GS_MMO_USER='" << str_user << "'" << std::endl;
+      std::cerr << "The converted value is too big for an int.. " << gs_mmo::keys::GS_MMO_USER << "='" << str_user << "'" << std::endl;
       return false;
     }
     if (is_root()) {
@@ -214,7 +215,7 @@ bool try_apply_ctf01d_user(const std::string &work_dir) {
       }
       return change_privileges(user_id);
     } else if (geteuid() == user_id) {
-      std::cout << " * OK. GS_MMO_USER is equal with current user" << std::endl;
+      std::cout << " * OK. " << gs_mmo::keys::GS_MMO_USER << " is equal with current user" << std::endl;
     } else {
       return change_privileges(user_id);
     }

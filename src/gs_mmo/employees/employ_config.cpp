@@ -47,7 +47,7 @@
  ***********************************************************************************/
 
 #include <wsjcpp_employees.h>
-// #include <wsjcpp_yaml.h>
+#include <wsjcpp_yaml.h>
 #include <wsjcpp_core.h>
 #include <sstream>
 #include <thread>
@@ -61,6 +61,7 @@
 #include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_config.h"
 #include "third_party/smallsha1/smallsha1.h"
+#include "third_party/nlohmann/json.hpp"
 #include "third_party/HowardHinnant/date.h"
 #include <sys/stat.h>
 #include <stdio.h>
@@ -85,13 +86,14 @@ public:
   virtual std::string html_folder() const override;
 
 private:
+  void update_html_folder_fullpath();
   void update_files_in_data();
   bool apply_config();
-  // nlohmann::json load_files_sha1();
-  // void save_files_sha1(nlohmann::json &files);
-  // void update_data_html(nlohmann::json &files);
+  nlohmann::json load_files_sha1();
+  void save_files_sha1(nlohmann::json &files);
+  void update_data_html(nlohmann::json &files);
 
-  // bool checkYamlMainKeys(WsjcppYaml &yaml);
+  bool check_yaml_main_keys(WsjcppYaml &yaml);
   bool apply_web_port_from_env();
   // bool applyServicesConfig(WsjcppYaml &yaml);
   // bool readTeamsConf(WsjcppYaml &yaml);
@@ -105,34 +107,9 @@ private:
   std::string m_config_filepath;
   bool m_applied_config;
 
-//   // scoreboard config
-//   ctf01d::scope_vars m_scoreboard_vars = ctf01d::scope_vars("scoreboard_config");
-//   std::shared_ptr<ctf01d::var_int> m_scoreboard_port;
-//   std::shared_ptr<ctf01d::var_dir> m_scoreboard_html_folder;
-//   std::shared_ptr<ctf01d::var_bool> m_scoreboard_auto_detection_team_id_by_subnet_ip;
-//   std::shared_ptr<ctf01d::var_bool> m_scoreboard_random;
-//   std::shared_ptr<ctf01d::var_bool> m_scoreboard_metrics_enabled;
-//   std::shared_ptr<ctf01d::var_allowed_ip> m_scoreboard_metrics_allowed_for;
-
-//   // game config
-//   ctf01d::game_config m_game_config;
-
-//   ctf01d::scope_vars m_teams_config_vars = ctf01d::scope_vars("teams_config");
-//   std::shared_ptr<ctf01d::var_string> m_ip_or_host_prefix;
-//   std::shared_ptr<ctf01d::var_string> m_ip_or_host_suffix;
-
-//   // teams config
-//   std::vector<ctf01d::team_config> m_teams;
-//   std::map<std::string, ctf01d::team_config> m_teams_cache;
-//   std::vector<std::string> m_teams_ip_or_host;
-//   std::map<std::string, std::string> m_teams_subnets;
-
-//   // services config
-//   std::vector<ctf01d::service_config> m_services;
-
-//   // hot-reload: for reload config in runtime
-//   std::thread m_thread_watcher;
-//   std::mutex m_mutex_thread_watcher;
+  int m_web_port;
+  std::string m_html_folder;
+  std::string m_html_folder_fullpath;
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_config)
@@ -141,16 +118,10 @@ employ_config::employ_config()
 : WsjcppEmployBase({ gs_mmo::config::name() }, {}) {
   TAG = gs_mmo::config::name();
   m_app_version = "v??";
-
-  // game options
   m_applied_config = false;
-
-  // scoreboard config
-  // m_scoreboard_port = ctf01d::var_int::create({"scoreboard", "port"}, 8080, m_scoreboard_vars);
-  // m_scoreboard_port->set_minimum(ctf01d::MIN_TCP_PORT);
-  // m_scoreboard_port->set_maximum(ctf01d::MAX_TCP_PORT);
-  // m_scoreboard_random = ctf01d::var_bool::create({"scoreboard", "random"}, false, m_scoreboard_vars);
-  // m_scoreboard_html_folder = ctf01d::var_dir::create({"scoreboard", "html-dir-path"}, "./html", m_work_dir, m_scoreboard_vars);
+  m_web_port = 1123;
+  m_html_folder = "./html";
+  update_html_folder_fullpath();
 }
 
 employ_config::~employ_config() {
@@ -169,20 +140,16 @@ bool employ_config::init(const std::string &sName, bool bSilent) {
 
   this->update_files_in_data();
 
-  // if (!this->apply_config()) {
-  //   sea5kg::log::error(TAG, "Configuration file has some problems");
-  //   return false;
-  // }
+  if (!this->apply_config()) {
+    sea5kg::log::error(TAG, "Configuration file has some problems");
+    return false;
+  }
 
   return true;
 }
 
 bool employ_config::deinit(const std::string &sName, bool bSilent) {
   sea5kg::log::info(TAG, "deinit");
-  // wait stop threads
-  // if (m_thread_watcher.joinable()) {
-  //   m_thread_watcher.join();
-  // }
   return true;
 }
 
@@ -200,7 +167,7 @@ void employ_config::set_work_dir(const std::string &sWorkDir) {
   }
   m_work_dir = sWorkDir;
   m_config_filepath = m_work_dir + "/config.yml";
-  // m_scoreboard_html_folder->set_root_dir(m_work_dir);
+  update_html_folder_fullpath();
 }
 
 std::string employ_config::get_work_dir() {
@@ -226,28 +193,37 @@ bool employ_config::apply_config() {
     return false;
   }
 
-//   WsjcppYaml yaml;
-//   std::string sError;
-//   if (!yaml.loadFromFile(m_config_filepath, sError)) {
-//     sea5kg::log::error(TAG, "Could not parse " + m_config_filepath + ", reason: " + sError);
-//     return false;
-//   }
+  WsjcppYaml yaml;
+  std::string sError;
+  if (!yaml.loadFromFile(m_config_filepath, sError)) {
+    sea5kg::log::error(TAG, "Could not parse " + m_config_filepath + ", reason: " + sError);
+    return false;
+  }
 
-//   if (!checkYamlMainKeys(yaml)) {
-//     return false;
-//   }
+  if (!check_yaml_main_keys(yaml)) {
+    return false;
+  }
 
-//   auto cursor = yaml.getCursor();
-//   std::string err;
-//   if (!m_game_config.read(cursor, m_work_dir, err)) {
-//     sea5kg::log::error(TAG, err);
-//     return false;
-//   }
+  auto cursor = yaml.getCursor();
+  std::string err;
 
-//   if (!m_scoreboard_vars.read(cursor, err)) {
-//     sea5kg::log::error(TAG, err);
-//     return false;
-//   }
+  auto server_conf = cursor[gs_mmo::keys::SERVER];
+  if (!server_conf.hasKey(gs_mmo::keys::WEB_PORT)) {
+    sea5kg::log::error(TAG, "Missing key '" + gs_mmo::keys::WEB_PORT + "'");
+    return false;
+  }
+  m_web_port = server_conf[gs_mmo::keys::WEB_PORT].valInt();
+
+  if (!server_conf.hasKey(gs_mmo::keys::HTML_FOLDER)) {
+    sea5kg::log::error(TAG, "Missing key '" + gs_mmo::keys::HTML_FOLDER + "'");
+    return false;
+  }
+  m_html_folder = server_conf[gs_mmo::keys::HTML_FOLDER].valStr();
+  update_html_folder_fullpath();
+  if (!wsjcpp::dir_exists(m_html_folder_fullpath)) {
+    sea5kg::log::error(TAG, "Directory '" + m_html_folder_fullpath + "' not found");
+    return false;
+  }
 
   // GS_MMO_PORT
   if (!apply_web_port_from_env()) {
@@ -259,15 +235,11 @@ bool employ_config::apply_config() {
 }
 
 int employ_config::web_port() const {
-  // TODO
-  return 1234;
-  // return m_scoreboard_port->value();
+  return m_web_port;
 }
 
 std::string employ_config::html_folder() const {
-  // TODO
-  return "./html";
-  // return m_scoreboard_html_folder->value();
+  return m_html_folder_fullpath;
 }
 
 // helper
@@ -319,6 +291,10 @@ std::string sha1_by_file(const std::string &sFilename) {
   return std::string(hexstring);
 }
 
+void employ_config::update_html_folder_fullpath() {
+  m_html_folder_fullpath = wsjcpp::normalize_filepath(m_work_dir + "/" + m_html_folder);
+}
+
 void employ_config::update_files_in_data() {
   std::string sError;
   if (!wsjcpp::dir_exists(m_work_dir + "/logs")) {
@@ -328,194 +304,151 @@ void employ_config::update_files_in_data() {
     }
   }
 
-  // nlohmann::json previous_files_sha1 = load_files_sha1();
+  nlohmann::json previous_files_sha1 = load_files_sha1();
 
-  // if (!wsjcpp::file_exists(m_work_dir + "/config.yml")) {
-  //   sea5kg::log::warning(TAG, "Extracting config.yml and files");
-  //   sea5kg::log::warning(TAG, "Extracting checker_example_*");
-  //   const std::vector<WsjcppResourceFile*> &vFiles = WsjcppResourcesManager::list();
-  //   std::vector<std::string> vExecutableFiles;
-  //   for (int i = 0; i < vFiles.size(); i++) {
-  //     std::string filepath = vFiles[i]->getFilename();
-  //     if (filepath.rfind("./data_sample/checker_example_", 0) == 0) {
-  //       std::vector<std::string> vPath = wsjcpp::split(filepath, "/");
-  //       std::string sDirname = vPath[2];
-  //       vPath.erase (vPath.begin(),vPath.begin()+3);
-  //       std::string sNewFilepath = wsjcpp::join(vPath, "/");
-  //       sNewFilepath = wsjcpp::normalize_filepath(m_work_dir + "/" + sDirname + "/" + sNewFilepath);
-  //       if (!wsjcpp::file_exists(sNewFilepath)) {
-  //         std::cout << "Extracting file '" << filepath << "' to '" << sNewFilepath << "'" << std::endl;
-  //       } else {
-  //         std::cout << "File '" << sNewFilepath << "' already exists. Skip." << std::endl;
-  //         continue;
-  //       }
+  if (!wsjcpp::file_exists(m_work_dir + "/config.yml")) {
+    sea5kg::log::warning(TAG, "Extracting config.yml");
+    WsjcppResourceFile* pConfigYml = WsjcppResourcesManager::get("./data/config.yml");
+    std::string sNewFilepath = wsjcpp::normalize_filepath(m_work_dir + "/config.yml");
+    if (!WsjcppCore::writeFile(sNewFilepath, pConfigYml->getBuffer(), pConfigYml->getBufferSize())) {
+      std::cout << "ERROR. Could not write file. " << std::endl;
+    } else {
+      std::cout << "Successfully created file. " << std::endl;
+    }
+  }
 
-  //       // prepare folder
-  //       std::string sFolder = wsjcpp::normalize_filepath(m_work_dir + "/" + sDirname + "/");
-  //       if (!wsjcpp::dir_exists(sFolder)) {
-  //         WsjcppCore::makeDir(sFolder);
-  //       }
-
-  //       if (!WsjcppCore::writeFile(sNewFilepath, vFiles[i]->getBuffer(), vFiles[i]->getBufferSize())) {
-  //         std::cout << "ERROR. Could not write file. " << std::endl;
-  //         continue;
-  //       } else {
-  //         std::cout << "Successfully created file. " << std::endl;
-  //         // TODO redesign set permission via wsjcpp
-  //         if (chmod(sNewFilepath.c_str(), S_IRWXU|S_IRWXG) != 0) {
-  //           std::cout << "ERROR. Could not change permissions for. " << sNewFilepath << std::endl;
-  //         } else {
-  //           struct stat info;
-  //           stat(sNewFilepath.c_str(), &info);
-  //           printf("after chmod(), permissions are: %08x\n", info.st_mode);
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   WsjcppResourceFile* pConfigYml = WsjcppResourcesManager::get("./data_sample/config.yml");
-  //   std::string sNewFilepath = wsjcpp::normalize_filepath(m_work_dir + "/config.yml");
-  //   if (!WsjcppCore::writeFile(sNewFilepath, pConfigYml->getBuffer(), pConfigYml->getBufferSize())) {
-  //     std::cout << "ERROR. Could not write file. " << std::endl;
-  //   } else {
-  //     std::cout << "Successfully created file. " << std::endl;
-  //   }
-  // }
-
-  // update_data_html(previous_files_sha1);
-  // save_files_sha1(previous_files_sha1);
+  update_data_html(previous_files_sha1);
+  save_files_sha1(previous_files_sha1);
 }
 
-// nlohmann::json employ_config::load_files_sha1() {
-//   nlohmann::json files_sha1;
-//   if (wsjcpp::file_exists(m_work_dir + "/files_sha1.json")) {
-//     std::ifstream ifs(m_work_dir + "/files_sha1.json");
-//     files_sha1 = nlohmann::json::parse(ifs);
-//   }
-//   return files_sha1;
-// }
+nlohmann::json employ_config::load_files_sha1() {
+  nlohmann::json files_sha1 = nlohmann::json::object();
+  if (wsjcpp::file_exists(m_work_dir + "/files_sha1.json")) {
+    std::ifstream ifs(m_work_dir + "/files_sha1.json");
+    files_sha1 = nlohmann::json::parse(ifs);
+  }
+  return files_sha1;
+}
 
-// void employ_config::save_files_sha1(nlohmann::json &files) {
-//   std::ofstream output(m_work_dir + "/files_sha1.json");
-//   output << std::setw(2) << files << std::endl;
-// }
+void employ_config::save_files_sha1(nlohmann::json &files) {
+  std::ofstream output(m_work_dir + "/files_sha1.json");
+  output << std::setw(2) << files << std::endl;
+}
 
-// void employ_config::update_data_html(nlohmann::json &previous_files_sha1) {
-//   sea5kg::log::warning(TAG, "Updating files in data/html");
-//   if (!wsjcpp::dir_exists(m_work_dir + "/html")) {
-//     WsjcppCore::makeDir(m_work_dir + "/html");
-//   }
+void employ_config::update_data_html(nlohmann::json &previous_files_sha1) {
+  sea5kg::log::warning(TAG, "Updating files in data/html");
+  if (!wsjcpp::dir_exists(m_work_dir + "/html")) {
+    WsjcppCore::makeDir(m_work_dir + "/html");
+  }
 
-//   const std::vector<WsjcppResourceFile*> &vFiles = WsjcppResourcesManager::list();
-//   for (int i = 0; i < vFiles.size(); i++) {
-//     std::string source_filepath = vFiles[i]->getFilename();
-//     if (source_filepath.rfind("./data_sample/html/", 0) != 0) {
-//       continue;
-//     }
-//     // remove base folder
-//     std::vector<std::string> vPath = wsjcpp::split(source_filepath, "/");
-//     vPath.erase (vPath.begin(),vPath.begin()+3);
-//     std::string target_filepath = wsjcpp::join(vPath, "/");
-//     target_filepath = wsjcpp::normalize_filepath(m_work_dir + "/html/" + target_filepath);
+  const std::vector<WsjcppResourceFile*> &vFiles = WsjcppResourcesManager::list();
+  for (int i = 0; i < vFiles.size(); i++) {
+    std::string source_filepath = vFiles[i]->getFilename();
+    if (source_filepath.rfind("./data/html/", 0) != 0) {
+      continue;
+    }
+    // remove base folder
+    std::vector<std::string> vPath = wsjcpp::split(source_filepath, "/");
+    vPath.erase (vPath.begin(),vPath.begin()+3);
+    std::string target_filepath = wsjcpp::join(vPath, "/");
+    target_filepath = wsjcpp::normalize_filepath(m_work_dir + "/html/" + target_filepath);
 
-//     // prepare folders
-//     if (!wsjcpp::file_exists(target_filepath)) {
-//       std::string dirpath = wsjcpp::normalize_filepath(m_work_dir + "/html/");
-//       for (int p = 0; p < vPath.size()-1; p++) {
-//         dirpath = wsjcpp::normalize_filepath(dirpath + "/" + vPath[p]);
-//         if (!wsjcpp::dir_exists(dirpath)) {
-//           if (!WsjcppCore::makeDir(dirpath)) {
-//             std::cout << "ERROR. Could not create: " << dirpath << std::endl;
-//             continue;
-//           }
-//         }
-//       }
-//     }
+    // prepare folders
+    if (!wsjcpp::file_exists(target_filepath)) {
+      std::string dirpath = wsjcpp::normalize_filepath(m_work_dir + "/html/");
+      for (int p = 0; p < vPath.size()-1; p++) {
+        dirpath = wsjcpp::normalize_filepath(dirpath + "/" + vPath[p]);
+        if (!wsjcpp::dir_exists(dirpath)) {
+          if (!WsjcppCore::makeDir(dirpath)) {
+            std::cout << "ERROR. Could not create: " << dirpath << std::endl;
+            continue;
+          }
+        }
+      }
+    }
 
-//     std::string previous_sha1 = "";
-//     if (previous_files_sha1.contains(source_filepath)) {
-//       previous_sha1 = previous_files_sha1[source_filepath];
-//     }
+    std::string previous_sha1 = "";
+    if (previous_files_sha1.contains(source_filepath)) {
+      previous_sha1 = previous_files_sha1[source_filepath];
+    }
 
-//     if (wsjcpp::file_exists(target_filepath) && previous_sha1 != "") {
-//       if (previous_sha1 != sha1_by_file(target_filepath)) {
-//         // Skip. file has changes by user. Skip.
-//         std::cout << "Warning. Could not override file, because has changes: " << target_filepath << std::endl;
-//         continue;
-//       }
-//     }
+    if (wsjcpp::file_exists(target_filepath) && previous_sha1 != "") {
+      if (previous_sha1 != sha1_by_file(target_filepath)) {
+        // Skip. file has changes by user. Skip.
+        std::cout << "Warning. Could not override file, because has changes: " << target_filepath << std::endl;
+        continue;
+      }
+    }
 
-//     std::string new_sha1 = sha1_by_data(vFiles[i]->getBuffer(), vFiles[i]->getBufferSize());
-//     if (wsjcpp::file_exists(target_filepath) && new_sha1 == previous_sha1) {
-//       // Skip. file has same content
-//       continue;
-//     }
+    std::string new_sha1 = sha1_by_data(vFiles[i]->getBuffer(), vFiles[i]->getBufferSize());
+    if (wsjcpp::file_exists(target_filepath) && new_sha1 == previous_sha1) {
+      // Skip. file has same content
+      continue;
+    }
 
-//     if (!WsjcppCore::writeFile(target_filepath, vFiles[i]->getBuffer(), vFiles[i]->getBufferSize())) {
-//       std::cout << "ERROR. Could not write/override file. " << std::endl;
-//       continue;
-//     }
+    if (!WsjcppCore::writeFile(target_filepath, vFiles[i]->getBuffer(), vFiles[i]->getBufferSize())) {
+      std::cout << "ERROR. Could not write/override file. " << std::endl;
+      continue;
+    }
 
-//     std::cout << "Successfully created/updated file: " << target_filepath << std::endl;
-//     std::string err;
-//     if (!WsjcppCore::setFilePermissions(target_filepath, WsjcppFilePermissions(0x644), err)) {
-//       sea5kg::log::critical(TAG, err);
-//     }
-//     previous_files_sha1[source_filepath] = new_sha1;
-//   }
-// }
+    std::cout << "Successfully created/updated file: " << target_filepath << std::endl;
+    std::string err;
+    if (!WsjcppCore::setFilePermissions(target_filepath, WsjcppFilePermissions(0x644), err)) {
+      sea5kg::log::critical(TAG, err);
+    }
+    previous_files_sha1[source_filepath] = new_sha1;
+  }
+}
 
-// bool employ_config::checkYamlMainKeys(WsjcppYaml &yaml) {
-//   // check main keys
-//   auto cur = yaml.getCursor();
-//   // TODO list from vars
-//   std::vector<std::string> expected_keys = {
-//     "scoreboard",
-//     "game",
-//     "services",
-//     "teams",
-//   };
-//   std::vector<std::string> main_keys = cur.keys();
-//   for (int i = 0; i < main_keys.size(); i++) {
-//     if (std::find(expected_keys.begin(), expected_keys.end(), main_keys[i]) == expected_keys.end()) {
-//       sea5kg::log::error(TAG, "Got unexpected key in main: '" + main_keys[i] + "'");
-//       return false;
-//     }
-//   }
-//   for (int i = 0; i < expected_keys.size(); i++) {
-//     if (std::find(main_keys.begin(), main_keys.end(), expected_keys[i]) == main_keys.end()) {
-//       sea5kg::log::error(TAG, "Not found expected key in config: '" + expected_keys[i] + "'");
-//       return false;
-//     }
-//   }
-//   return true;
-// }
+bool employ_config::check_yaml_main_keys(WsjcppYaml &yaml) {
+  auto cur = yaml.getCursor();
+  std::vector<std::string> expected_keys = {
+    gs_mmo::keys::SERVER,
+  };
+  std::vector<std::string> main_keys = cur.keys();
+  for (int i = 0; i < main_keys.size(); i++) {
+    if (std::find(expected_keys.begin(), expected_keys.end(), main_keys[i]) == expected_keys.end()) {
+      sea5kg::log::error(TAG, "Got unexpected key in main: '" + main_keys[i] + "'");
+      return false;
+    }
+  }
+  for (int i = 0; i < expected_keys.size(); i++) {
+    if (std::find(main_keys.begin(), main_keys.end(), expected_keys[i]) == main_keys.end()) {
+      sea5kg::log::error(TAG, "Not found expected key in config: '" + expected_keys[i] + "'");
+      return false;
+    }
+  }
+  return true;
+}
 
 bool employ_config::apply_web_port_from_env() {
-  // TODO
   std::string str_port;
   if (WsjcppCore::getEnv(gs_mmo::keys::GS_MMO_PORT, str_port)) {
-  //  sea5kg::log::warning(TAG, ctf01d::keys::CTF01D_PORT + "='" + str_port + "'");
-  //   try {
-  //     int port = std::stoi(str_port);
-  //     std::string err;
-  //     if (!m_scoreboard_port->set_value(port, err)) {
-  //       sea5kg::log::error(TAG, ctf01d::keys::CTF01D_PORT + "='" + str_port + "' is wrong. " + err);
-  //       return false;
-  //     }
-  //   } catch (const std::invalid_argument& e) {
-  //     sea5kg::log::error(TAG, "No conversion could be performed. " + ctf01d::keys::CTF01D_PORT + "='" + str_port + "'");
-  //     std::cerr << "Error: \n";
-  //     return false;
-  //   } catch (const std::out_of_range& e) {
-  //     sea5kg::log::error(TAG, "The converted value is too big for an int.. " + ctf01d::keys::CTF01D_PORT + "='" + str_port + "'");
-  //     return false;
-  //   } catch (...) {
-  //     sea5kg::log::error(TAG, "The converted value is too big for an int.. " + ctf01d::keys::CTF01D_PORT + "='" + str_port + "'");
-  //     return false;
-  //   }
-  //   sea5kg::log::info(TAG, "scoreboard.port will be overridden from environment variable. " + ctf01d::keys::CTF01D_PORT + "='" + str_port + "'");
-  //   return true;
+    sea5kg::log::warning(TAG, gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "'");
+    try {
+      int port = std::stoi(str_port);
+      std::string err;
+      if (port < gs_mmo::MIN_TCP_PORT || port > gs_mmo::MAX_TCP_PORT) {
+        err = gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "' is wrong.";
+        err += "(expected port >= " + std::to_string(gs_mmo::MIN_TCP_PORT);
+        err += " and port <= " + std::to_string(gs_mmo::MAX_TCP_PORT);
+        sea5kg::log::error(TAG, err);
+        return false;
+      }
+      m_web_port = port;
+    } catch (const std::invalid_argument& e) {
+      sea5kg::log::error(TAG, "No conversion could be performed. " + gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "'");
+      std::cerr << "Error: \n";
+      return false;
+    } catch (const std::out_of_range& e) {
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "'");
+      return false;
+    } catch (...) {
+      sea5kg::log::error(TAG, "The converted value is too big for an int.. " + gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "'");
+      return false;
+    }
+    sea5kg::log::info(TAG, "scoreboard.port will be overridden from environment variable. " + gs_mmo::keys::GS_MMO_PORT + "='" + str_port + "'");
+    return true;
   }
   return true;
 }
