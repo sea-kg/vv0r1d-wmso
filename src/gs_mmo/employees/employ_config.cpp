@@ -213,6 +213,13 @@ bool employ_config::apply_config() {
     return false;
   }
   m_web_port = server_conf[gs_mmo::keys::WEB_PORT].valInt();
+  if (m_web_port < gs_mmo::MIN_TCP_PORT || m_web_port > gs_mmo::MAX_TCP_PORT) {
+    err = gs_mmo::keys::GS_MMO_PORT + "='" + std::to_string(m_web_port) + "' is wrong.";
+    err += "(expected port >= " + std::to_string(gs_mmo::MIN_TCP_PORT);
+    err += " and port <= " + std::to_string(gs_mmo::MAX_TCP_PORT);
+    sea5kg::log::error(TAG, err);
+    return false;
+  }
 
   if (!server_conf.hasKey(gs_mmo::keys::HTML_FOLDER)) {
     sea5kg::log::error(TAG, "Missing key '" + gs_mmo::keys::HTML_FOLDER + "'");
