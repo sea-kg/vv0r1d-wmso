@@ -110,7 +110,7 @@ private:
   // std::atomic<bool> m_auto_detection_team_id_by_subnet_ip;
 
   // std::string m_sIndexHtml;
-  // std::string m_sScoreboardHtmlFolder;
+  std::string m_sHtmlFolder;
   // std::string m_sCacheResponseGameJson;
   // std::string m_sCacheResponseTeamsJson;
 
@@ -170,14 +170,14 @@ void EmployWebServer_custom_logger(int level, const char *msg, int len) {
 
 int employ_web_server::start() {
 
-  // auto pEmployConfig = findWsjcppEmploy<gs_mmo::config>();
+  auto config = findWsjcppEmploy<gs_mmo::config>();
   g_http_logger->set_log_filename_prefix("http_hv_");
   g_http_logger->set_log_dirpath(sea5kg::log::log_dirpath());
   g_http_logger->set_rotation_period_in_seconds(sea5kg::log::rotation_period_in_seconds());
   g_http_logger->set_log_level_file_output(sea5kg::log_level::DEBUG);
   g_http_logger->set_log_level_console_output(sea5kg::log_level::DISABLE);
 
-  // m_sScoreboardHtmlFolder = pEmployConfig->scoreboard_html_folder();
+  m_sHtmlFolder = config->html_folder();
   // updateJsonCache();
 
   std::string starting_message = "Starting scoreboard on http://localhost:" + std::to_string(m_config->web_port()) + "/";
@@ -206,15 +206,6 @@ int employ_web_server::start() {
   server.setPort(m_config->web_port());
   server.setThreadNum(4);
   server.run();
-
-  // TODO: stop all threads
-
-  /*while(1) {
-    Log::info(TAG, "wait 2 minutes");
-    std::this_thread::sleep_for(std::chrono::minutes(2));
-    Log::info(TAG, "wait ended");
-  }*/
-
   return 0;
 }
 
@@ -276,17 +267,17 @@ void employ_web_server::updateJsonCache() {
 }
 
 int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
-  // std::string sOriginalRequestPath = req->path;
-  // std::string request_path;
+  std::string sOriginalRequestPath = req->path;
+  std::string request_path;
 
-  // // remove get params from path
-  // std::size_t nFoundGetParams = sOriginalRequestPath.rfind("?");
-  // if (nFoundGetParams != std::string::npos) {
-  //   request_path = sOriginalRequestPath.substr(0, nFoundGetParams);
-  // } else {
-  //   request_path = sOriginalRequestPath;
-  // }
-  // request_path = wsjcpp::normalize_filepath(request_path);
+  // remove get params from path
+  std::size_t nFoundGetParams = sOriginalRequestPath.rfind("?");
+  if (nFoundGetParams != std::string::npos) {
+    request_path = sOriginalRequestPath.substr(0, nFoundGetParams);
+  } else {
+    request_path = sOriginalRequestPath;
+  }
+  request_path = wsjcpp::normalize_filepath(request_path);
 
   // // hlogi("request_path = " + request_path);
   // if (request_path == "/flag") { // Public endpoint. Allowed without authorization.
@@ -316,29 +307,30 @@ int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
   //   return 404;
   // }
 
-  // if (request_path == "/") {
-  //     request_path = "/index.html";
-  // }
+  std::string filepath = wsjcpp::normalize_filepath(m_sHtmlFolder + "/" + request_path);
+  if (wsjcpp::dir_exists(filepath)) {
+    std::string indexHtml = filepath + "/index.html";
+    if (wsjcpp::file_exists(indexHtml)) {
+      return resp->File(indexHtml.c_str());
+    }
+    return 404;
+  }
 
-  // std::string filepath = wsjcpp::normalize_filepath(m_sScoreboardHtmlFolder + "/" + request_path);
-  // if (wsjcpp::dir_exists(filepath)) {
-  //     return 404;
-  // }
-  // if (wsjcpp::file_exists(filepath)) {
-  //     return resp->File(filepath.c_str());
-  // }
+  if (wsjcpp::file_exists(filepath)) {
+    return resp->File(filepath.c_str());
+  }
 
-  // std::string sResPath = wsjcpp::normalize_filepath("./data_sample/html/" + request_path);
-  // if (WsjcppResourcesManager::has(sResPath)) {
-  //     WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
-  //     resp->Data(
-  //         (void *)pFile->getBuffer(),
-  //         pFile->getBufferSize(),
-  //         true // nocopy
-  //     );
-  //     resp->SetContentTypeByFilename(sResPath.c_str());
-  //     return 200;
-  // }
+  std::string sResPath = wsjcpp::normalize_filepath("./data/html/" + request_path);
+  if (WsjcppResourcesManager::has(sResPath)) {
+      WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
+      resp->Data(
+          (void *)pFile->getBuffer(),
+          pFile->getBufferSize(),
+          true // nocopy
+      );
+      resp->SetContentTypeByFilename(sResPath.c_str());
+      return 200;
+  }
   return 404; // Not found
 }
 
