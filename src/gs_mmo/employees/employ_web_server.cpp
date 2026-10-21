@@ -46,22 +46,22 @@
  *
  ***********************************************************************************/
 
+#include "gs_mmo/include/gs_mmo_config.h"
+#include "gs_mmo/include/gs_mmo_globals.h"
+#include "gs_mmo/include/gs_mmo_web_server.h"
+#include "objects/gs_mmo_error_info.h"
 #include <atomic>
 #include <cstring>
 #include <fstream>
 #include <initializer_list>
 #include <optional>
 #include <regex>
+#include <sea5kg_logger.h>
 #include <sstream>
 #include <utility>
 #include <vector>
 #include <wsjcpp_core.h>
 #include <wsjcpp_employees.h>
-#include "gs_mmo/include/gs_mmo_globals.h"
-#include "gs_mmo/include/gs_mmo_web_server.h"
-#include "gs_mmo/include/gs_mmo_config.h"
-#include <sea5kg_logger.h>
-#include "objects/gs_mmo_error_info.h"
 
 // libhv includes
 #include "EventLoop.h"       // libhv
@@ -88,6 +88,10 @@ private:
   void log_warn(const std::string &message);
   void updateJsonCache();
 
+  void web_socket_onopen(const WebSocketChannelPtr &channel, const HttpRequestPtr &req);
+  void web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg);
+  void web_socket_onclose(const WebSocketChannelPtr &channel);
+
   int httpWebFolder(HttpRequest *req, HttpResponse *resp);
   int httpApiV1Game(HttpRequest *req, HttpResponse *resp);
   int httpApiGameCurrentTime(HttpRequest *req, HttpResponse *resp);
@@ -104,6 +108,7 @@ private:
   int httpLogo(const std::string &request_path, HttpRequest *req, HttpResponse *resp);
 
   std::shared_ptr<hv::HttpService> m_pHttpService;
+  std::shared_ptr<hv::WebSocketService> m_webSocketService;
   std::string m_sApiPathPrefix;
 
   // std::atomic<bool> m_metrics_enabled;
@@ -180,7 +185,8 @@ int employ_web_server::start() {
   m_sHtmlFolder = config->html_folder();
   // updateJsonCache();
 
-  std::string starting_message = "Starting scoreboard on http://localhost:" + std::to_string(m_config->web_port()) + "/";
+  std::string starting_message =
+    "Starting scoreboard on http://localhost:" + std::to_string(m_config->web_port()) + "/";
   g_http_logger->success(TAG, starting_message);
   sea5kg::log::success(TAG, starting_message);
 
@@ -201,11 +207,26 @@ int employ_web_server::start() {
     "*", std::bind(&employ_web_server::httpWebFolder, this, std::placeholders::_1, std::placeholders::_2)
   );
 
-  hv::HttpServer server(m_pHttpService.get());
-  // server.setPort(pEmployConfig->scoreboard_port());
-  server.setPort(m_config->web_port());
-  server.setThreadNum(4);
-  server.run();
+  // hv::HttpServer server(m_pHttpService.get());
+  // server.setPort(m_config->web_port());
+  // server.setThreadNum(4);
+  // server.run();
+
+  m_webSocketService = std::make_shared<hv::WebSocketService>();
+
+  m_webSocketService->onopen =
+    std::bind(&employ_web_server::web_socket_onopen, this, std::placeholders::_1, std::placeholders::_2);
+  m_webSocketService->onmessage =
+    std::bind(&employ_web_server::web_socket_onmessage, this, std::placeholders::_1, std::placeholders::_2);
+    m_webSocketService->onclose =
+      std::bind(&employ_web_server::web_socket_onclose, this, std::placeholders::_1);
+
+  websocket_server_t server;
+  server.service = m_pHttpService.get();
+  server.port = m_config->web_port();
+  server.worker_threads = 4; // TODO move to config
+  server.ws = m_webSocketService.get();
+  websocket_server_run(&server);
   return 0;
 }
 
@@ -266,6 +287,71 @@ void employ_web_server::updateJsonCache() {
   // m_sCacheResponseTeamsJson = jsonTeams.dump();
 }
 
+void employ_web_server::web_socket_onopen(const WebSocketChannelPtr &channel, const HttpRequestPtr &req) {
+  std::cout << "ws. onopen = " << std::endl;
+}
+
+void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg) {
+  // VvWsConnectionContext *ctx = channel->getContext<VvWsConnectionContext>();
+  std::cout << "ws. msg = " << msg << std::endl;
+  // // https://www.jsonrpc.org/specification
+  // nlohmann::json j = nlohmann::json::parse(msg);
+  // std::string sMethod = j["method"];
+  // if (sMethod == "get_player_position") {
+  //   nlohmann::json jsonResp;
+  //   jsonResp["id"] = j["id"];
+  //   jsonResp["method"] = sMethod;
+
+  //   if (ctx->getPlayerContext()) {
+  //     nlohmann::json jsonResult;
+  //     jsonResult["x"] = ctx->getPlayerContext()->getPlayerX();
+  //     jsonResult["y"] = ctx->getPlayerContext()->getPlayerY();
+  //     jsonResp["result"] = jsonResult;
+  //   } else {
+  //     nlohmann::json jsonError;
+  //     jsonError["code"] = 550;
+  //     jsonError["message"] = "Not found error context";
+  //     jsonResp["error"] = jsonError;
+  //   }
+  //   channel->send(jsonResp.dump());
+  // } else if (j["method"] == "player_move_to") {
+  //   ctx->handleMessage(msg);
+  // } else if (sMethod == "set_session_token") {
+  //   nlohmann::json jsonResp;
+  //   jsonResp["id"] = j["id"];
+  //   std::string sToken = j["params"]["token"];
+  //   if (m_mapSessions.count(sToken) <= 0) {
+  //     m_mapSessions[sToken] = new PlayerContext();
+  //   }
+  //   ctx->setPlayerContext(m_mapSessions[sToken]);
+  //   nlohmann::json jsonResult;
+  //   jsonResp["result"] = jsonResult;
+  //   channel->send(jsonResp.dump());
+  // } else if (sMethod == "get_map") {
+  //   nlohmann::json jsonResp;
+  //   jsonResp["id"] = j["id"];
+  //   jsonResp["method"] = sMethod;
+  //   if (ctx->getPlayerContext()) {
+  //     nlohmann::json jsonResult;
+  //     int nX = ctx->getPlayerContext()->getPlayerX();
+  //     int nY = ctx->getPlayerContext()->getPlayerY();
+  //     jsonResp["result"] = m_pGameMapObjects->toJson(nX - 1000, nY - 1000, 2000, 2000);
+  //   } else {
+  //     nlohmann::json jsonError;
+  //     jsonError["code"] = 550;
+  //     jsonError["message"] = "Not found error context";
+  //     jsonResp["error"] = jsonError;
+  //   }
+  //   channel->send(jsonResp.dump());
+  // } else {
+  //   std::cout << "Unknown " << sMethod << std::endl;
+  // }
+}
+
+void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
+  std::cout << "ws. onclose = " << std::endl;
+}
+
 int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
   std::string sOriginalRequestPath = req->path;
   std::string request_path;
@@ -322,14 +408,14 @@ int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
 
   std::string sResPath = wsjcpp::normalize_filepath("./data/html/" + request_path);
   if (WsjcppResourcesManager::has(sResPath)) {
-      WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
-      resp->Data(
-          (void *)pFile->getBuffer(),
-          pFile->getBufferSize(),
-          true // nocopy
-      );
-      resp->SetContentTypeByFilename(sResPath.c_str());
-      return 200;
+    WsjcppResourceFile *pFile = WsjcppResourcesManager::get(sResPath);
+    resp->Data(
+      (void *)pFile->getBuffer(),
+      pFile->getBufferSize(),
+      true // nocopy
+    );
+    resp->SetContentTypeByFilename(sResPath.c_str());
+    return 200;
   }
   return 404; // Not found
 }

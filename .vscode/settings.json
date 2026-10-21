@@ -24,6 +24,7 @@
         "mysqlclient",
         "nokogiri",
         "noninteractive",
+        "onclose",
         "pycache",
         "pylint",
         "REUSEADDR",
