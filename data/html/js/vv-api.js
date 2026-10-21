@@ -5,23 +5,28 @@ VVAPI_LAYER_ROADS = 2;
 VVAPI_LAYER_VEGETATION = 3;
 VVAPI_LAYER_BUILDING = 4;
 
-
 class VvApi {
     constructor() {
         this.base_url = location.protocol + "//" + location.host;
         this.ws_req_id = 0;
         this.ws_requests = {};
-        this.ws_state = null;
+        this.ws_state = "connecting";   // "connecting" | "connected" | "disconnected"
+        this.ws_state_listeners = [];
 
         var self = this;
+
         if ("WebSocket" in window) {
             this.ws = new WebSocket("ws://" + location.host + "/ws-api/");
 
             this.ws.onopen = function() {
                 console.log("open");
+                // still "connecting" until the auth response comes back
                 if (!localStorage.getItem("vv-session-token")) {
                     var stoken = self.random_session_token();
                     localStorage.setItem("vv-session-token", stoken);
+                    // if server doesn't reply to hello in this case,
+                    // mark connected manually:
+                    self._set_ws_state("connected");
                 } else {
                     self.ws.send(JSON.stringify({
                         "id": "auth",
@@ -32,33 +37,52 @@ class VvApi {
                     }));
                 }
                 self.ws.send(JSON.stringify({"method": "hello"}));
-                // self.ws_state = true;
             };
-        
+
             this.ws.onmessage = function(ev) {
                 var received_msg = ev.data;
                 console.log(received_msg);
                 var resp = JSON.parse(received_msg);
                 var msg_id = resp["id"];
+
                 if (msg_id == "auth") {
-                    self.ws_state = true;
+                    self._set_ws_state("connected");
                 }
+
                 if (self.ws_requests[msg_id]) {
                     self.ws_requests[msg_id].resolve(resp["result"]);
                     delete self.ws_requests[msg_id];
                 }
-                // TODO
-                // this.ws_requests;
                 console.log("received websocket message: " + received_msg);
             };
-        
+
             this.ws.onclose = function() {
-              console.log("closed");
-              self.ws_state = false;
+                console.log("closed");
+                self._set_ws_state("disconnected");
             };
-          } else {
+
+            this.ws.onerror = function() {
+                console.log("ws error");
+                self._set_ws_state("disconnected");
+            };
+        } else {
             console.log("not found WebSocket!");
-          }
+            this.ws_state = "disconnected";
+        }
+    }
+
+    _set_ws_state(state) {
+        if (this.ws_state === state) return;
+        this.ws_state = state;
+        this.ws_state_listeners.forEach(fn => fn(state));
+    }
+
+    on_ws_state(fn) {
+        this.ws_state_listeners.push(fn);
+        fn(this.ws_state); // fire immediately with current state
+        return () => {
+            this.ws_state_listeners = this.ws_state_listeners.filter(f => f !== fn);
+        };
     }
 
     random_session_token() {

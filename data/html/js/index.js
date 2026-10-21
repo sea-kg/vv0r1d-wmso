@@ -49,6 +49,24 @@ document.addEventListener('DOMContentLoaded', function(){
         vvrender.player_target_coordinates = data;
         load_first_map(vvrender.player_coordinates)
     })
+
+    window.vvapi.on_ws_state((state) => {
+        const el = document.getElementById("ws-status");
+        switch (state) {
+            case "connecting":
+                el.textContent = "Connecting…";
+                el.className = "ws-status connecting";
+                break;
+            case "connected":
+                el.textContent = "Connected";
+                el.className = "ws-status connected";
+                break;
+            case "disconnected":
+                el.textContent = "Disconnected";
+                el.className = "ws-status disconnected";
+                break;
+        }
+    });
 });
 
 function resize_canvas() {
