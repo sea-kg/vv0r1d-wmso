@@ -15,26 +15,29 @@ document.addEventListener("keydown", event => {
 window.vvapi = new VvApi();
 
 function load_first_map(player_coordinates) {
-    vvapi.ws_get_map(player_coordinates).done(function(result) {
-        var objects = result["objects"];
-        for (var i in objects) {
-            var obj = objects[i];
-            if (obj.l == VVAPI_LAYER_BACKGROUND) {
-                vvrender.add_background_object(obj)
-            } else if (obj.l == VVAPI_LAYER_ROADS) {
-                vvrender.add_road_object(obj)
-            } else if (obj.l == VVAPI_LAYER_VEGETATION) {
-                vvrender.add_vegetation_object(obj)
-            } else if (obj.l == VVAPI_LAYER_BUILDING) {
-                vvrender.add_building_object(obj)
-            } else {
-                console.error("Unknown layer")
-            }
-        }
-        console.log("ws_get_map = ", result);
-        vvrender.resized();
-        vvrender.update();
-    });
+
+    // vvapi.ws_get_map(player_coordinates).done(function(result) {
+    //     var objects = result["objects"];
+    //     for (var i in objects) {
+    //         var obj = objects[i];
+    //         if (obj.l == VVAPI_LAYER_BACKGROUND) {
+    //             vvrender.add_background_object(obj)
+    //         } else if (obj.l == VVAPI_LAYER_ROADS) {
+    //             vvrender.add_road_object(obj)
+    //         } else if (obj.l == VVAPI_LAYER_VEGETATION) {
+    //             vvrender.add_vegetation_object(obj)
+    //         } else if (obj.l == VVAPI_LAYER_BUILDING) {
+    //             vvrender.add_building_object(obj)
+    //         } else {
+    //             console.error("Unknown layer")
+    //         }
+    //     }
+    //     console.log("ws_get_map = ", result);
+    //     vvrender.resized();
+    //     vvrender.update();
+    // });
+    vvrender.resized();
+    vvrender.update();
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -77,8 +80,7 @@ function resize_canvas() {
     el.style['height'] = window.innerHeight + 'px';
     el.width = window.innerWidth;
     el.height = window.innerHeight;
-    
-    
+
     if (window.vvrender) {
         window.vvrender.resized();
         window.vvrender.update();

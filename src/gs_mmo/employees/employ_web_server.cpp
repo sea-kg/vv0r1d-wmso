@@ -71,6 +71,13 @@
 #include "hssl.h"            // libhv
 #include "htime.h"           // libhv
 
+
+struct UserContext {
+  int id = 0;
+  int x = 0;
+  int y = 0;
+};
+
 class employ_web_server : public WsjcppEmployBase, public gs_mmo::web_server {
 public:
   employ_web_server();
@@ -118,7 +125,12 @@ private:
   std::string m_sHtmlFolder;
   // std::string m_sCacheResponseGameJson;
   // std::string m_sCacheResponseTeamsJson;
+  std::mutex m_mutex_connected_users;
+  std::map<const WebSocketChannelPtr *, std::string> m_connected_users;
 
+  // TODO to employ
+  unsigned int m_userid_counter;
+  std::map<std::string, UserContext> m_user_context;
   gs_mmo::config *m_config;
 };
 
@@ -127,7 +139,7 @@ REGISTRY_WSJCPP_EMPLOY(employ_web_server)
 employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::name()}, {gs_mmo::config::name()}) {
   TAG = gs_mmo::web_server::name();
   m_sApiPathPrefix = "/api/v1/";
-
+  m_userid_counter = 1;
   m_config = nullptr;
 }
 
@@ -288,15 +300,37 @@ void employ_web_server::updateJsonCache() {
 }
 
 void employ_web_server::web_socket_onopen(const WebSocketChannelPtr &channel, const HttpRequestPtr &req) {
+  // channel->c
+  std::lock_guard<std::mutex> lock(m_mutex_connected_users);
+  m_connected_users.insert(std::pair<const WebSocketChannelPtr *, std::string>(&channel, ""));
   std::cout << "ws. onopen = " << std::endl;
 }
 
 void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg) {
+  const WebSocketChannelPtr *ch_ptr = &channel;
+  std::cout << "m_connected_users.count(ch_ptr) = " << m_connected_users.count(ch_ptr) << std::endl;
   // VvWsConnectionContext *ctx = channel->getContext<VvWsConnectionContext>();
   std::cout << "ws. msg = " << msg << std::endl;
-  // // https://www.jsonrpc.org/specification
-  // nlohmann::json j = nlohmann::json::parse(msg);
-  // std::string sMethod = j["method"];
+  // https://www.jsonrpc.org/specification
+  nlohmann::json j = nlohmann::json::parse(msg);
+
+  std::string tkn;
+  {
+    std::lock_guard<std::mutex> lock(m_mutex_connected_users);
+    auto it = m_connected_users.find(ch_ptr);
+    if (it != m_connected_users.end())
+      tkn = it->second;
+  }
+
+  UserContext user_ctx;
+  if (tkn != "") {
+    auto it = m_user_context.find(tkn);
+    if (it != m_user_context.end())
+      user_ctx = it->second;
+  }
+
+  std::string sMethod = j["method"];
+  if (sMethod == "hello") {
   // if (sMethod == "get_player_position") {
   //   nlohmann::json jsonResp;
   //   jsonResp["id"] = j["id"];
@@ -316,17 +350,45 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   //   channel->send(jsonResp.dump());
   // } else if (j["method"] == "player_move_to") {
   //   ctx->handleMessage(msg);
-  // } else if (sMethod == "set_session_token") {
-  //   nlohmann::json jsonResp;
-  //   jsonResp["id"] = j["id"];
-  //   std::string sToken = j["params"]["token"];
-  //   if (m_mapSessions.count(sToken) <= 0) {
-  //     m_mapSessions[sToken] = new PlayerContext();
-  //   }
-  //   ctx->setPlayerContext(m_mapSessions[sToken]);
-  //   nlohmann::json jsonResult;
-  //   jsonResp["result"] = jsonResult;
-  //   channel->send(jsonResp.dump());
+  } else if (sMethod == "change_player_position") {
+    // std::string tkn = m_connected_users.find(ch_ptr)->second;
+    // if (user_ctx.id != )
+    auto it = m_user_context.find(tkn);
+    if (it != m_user_context.end()) {
+      it->second.x = j["params"]["x"];
+      it->second.y = j["params"]["y"];
+      // TODO send event player changed coordinates
+    } else {
+      std::cout << "Not found player by token " << tkn << std::endl;
+    }
+  } else if (sMethod == "set_random_session_token") {
+    std::string new_tkn = j["params"]["token"];
+    {
+      std::lock_guard<std::mutex> lock(m_mutex_connected_users);
+      auto it = m_connected_users.find(ch_ptr);
+      if (it != m_connected_users.end())
+        it->second = new_tkn;
+    }
+
+    {
+      auto it = m_user_context.find(new_tkn);
+      if (it != m_user_context.end())
+        user_ctx = it->second;
+      else
+      {
+        user_ctx.id = m_userid_counter++;
+        m_user_context[new_tkn] = user_ctx;
+      }
+    }
+    nlohmann::json jsonResp;
+    jsonResp["id"] = j["id"];
+
+    nlohmann::json jsonResult;
+    jsonResult["id"] = user_ctx.id;
+    jsonResult["x"] = user_ctx.x;
+    jsonResult["y"] = user_ctx.y;
+    jsonResp["result"] = jsonResult;
+    channel->send(jsonResp.dump());
   // } else if (sMethod == "get_map") {
   //   nlohmann::json jsonResp;
   //   jsonResp["id"] = j["id"];
@@ -343,13 +405,18 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   //     jsonResp["error"] = jsonError;
   //   }
   //   channel->send(jsonResp.dump());
-  // } else {
-  //   std::cout << "Unknown " << sMethod << std::endl;
-  // }
+  } else {
+    std::cout << "Unknown " << sMethod << std::endl;
+  }
 }
 
 void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
   std::cout << "ws. onclose = " << std::endl;
+  const WebSocketChannelPtr *ch_ptr = &channel;
+  std::lock_guard<std::mutex> lock(m_mutex_connected_users);
+  auto iter = m_connected_users.find(ch_ptr);
+  if (iter != m_connected_users.end())
+    m_connected_users.erase(iter);
 }
 
 int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {

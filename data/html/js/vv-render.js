@@ -359,10 +359,11 @@ class VvRender {
                 }
                 this.render_frame_player.t = t;
             }
-            
+
             // console.log(angel);
             this.player_coordinates.x += parseInt(Math.sin(angel)*5);
             this.player_coordinates.y += parseInt(Math.cos(angel)*5);
+            vvapi.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
         } else {
             this.render_frame_player = {
                 x: 0,
@@ -386,7 +387,7 @@ class VvRender {
         this.move_player();
         this.topLeftRealX = this.player_coordinates.x - this.player_draw_coordinates.x;
         this.topLeftRealY = this.player_coordinates.y - this.player_draw_coordinates.y;
-        
+
         this.draw_background();
         this.draw_roads();
         this.draw_vegetation();
@@ -434,7 +435,7 @@ class VvRender {
     __render_onclick(e) {
         var x = e.offsetX;
         var y = e.offsetY;
-        
+
         var i = this.is_menu_button(x, y);
         if (i >= 0) {
             console.log("clicked")
@@ -469,7 +470,6 @@ class VvRender {
                 y: this.player_coordinates.y + (y - this.player_draw_coordinates.y),
             }
             console.log(this.player_target_coordinates);
-            vvapi.ws_player_move_to(this.player_target_coordinates.x, this.player_target_coordinates.y);
         }
     }
 
