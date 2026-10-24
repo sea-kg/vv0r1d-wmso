@@ -54,9 +54,10 @@ game_net_events::game_net_events() : m_collect_events(true) {
   m_resp["jsonrpc"] = "2.0";
   m_resp["method"] = "events";
   m_resp["params"] = nlohmann::json::object();
-  m_resp["params"]["p"] = nlohmann::json::object();
-  m_resp["params"]["e"] = nlohmann::json::array();
+  unsafe_reset();
   m_last_events_ms = 0;
+  auto now = std::chrono::system_clock::now().time_since_epoch();
+  m_last_events_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 }
 
 void game_net_events::set_method_name(const std::string &method) {
@@ -73,9 +74,10 @@ void game_net_events::add_player(const gs_mmo::player_context &ctx) {
   ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
   if (m_collect_events) {
     nlohmann::json e = nlohmann::json::object();
-    e["t"] = "add";
+    e["t"] = game_net_events_type::ADD_PLAYER;
     e["id"] = ctx.id();
-    add_event_no_mutex(e);
+    ctx.update_position_in_json(e);
+    unsafe_add_event(e);
   }
 }
 
@@ -86,9 +88,9 @@ void game_net_events::remove_player(const std::string &userid) {
   }
   if (m_collect_events) {
     nlohmann::json e = nlohmann::json::object();
-    e["t"] = "rm";
+    e["t"] = game_net_events_type::REMOVE_PLAYER;
     e["id"] = userid;
-    add_event_no_mutex(e);
+    unsafe_add_event(e);
   }
 }
 
@@ -100,7 +102,7 @@ void game_net_events::update_player(const gs_mmo::player_context &ctx) {
   if (m_collect_events) {
     bool found_event = false;
     for (auto &e: m_resp["params"]["e"]) {
-      if (e["t"] == "mv" && e.contains("id") && e["id"] == ctx.id()) {
+      if (e["t"] == game_net_events_type::MOVE_PLAYER && e.contains("id") && e["id"] == ctx.id()) {
         ctx.update_position_in_json(e);
         found_event = true;
         // No need update m_last_events_ms
@@ -109,10 +111,10 @@ void game_net_events::update_player(const gs_mmo::player_context &ctx) {
     }
     if (!found_event) {
       nlohmann::json e = nlohmann::json::object();
-      e["t"] = "mv";
+      e["t"] = game_net_events_type::MOVE_PLAYER;
       e["id"] = ctx.id();
       ctx.update_position_in_json(e);
-      add_event_no_mutex(e);
+      unsafe_add_event(e);
     }
   }
 }
@@ -122,11 +124,19 @@ std::string game_net_events::to_string_json_request() {
   return m_resp.dump();
 }
 
+std::string game_net_events::pop_and_reset(long &last_update) {
+  std::lock_guard<std::mutex> lock(m_mutex);
+  std::string ret = m_resp.dump();
+  unsafe_reset();
+  last_update = m_last_events_ms;
+  return ret;
+}
+
 long game_net_events::get_last_time_event_ms() const {
   return m_last_events_ms;
 }
 
-void game_net_events::add_event_no_mutex(const nlohmann::json &e_data) {
+void game_net_events::unsafe_add_event(const nlohmann::json &e_data) {
   auto now = std::chrono::system_clock::now().time_since_epoch();
   long now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
 
@@ -134,6 +144,13 @@ void game_net_events::add_event_no_mutex(const nlohmann::json &e_data) {
   e["n"] = now_ms;
   m_resp["params"]["e"].push_back(e);
   m_last_events_ms = now_ms;
+}
+
+void game_net_events::unsafe_reset() {
+  m_resp["params"]["p"].clear();
+  m_resp["params"]["p"] = nlohmann::json::object();
+  m_resp["params"]["e"].clear();
+  m_resp["params"]["e"] = nlohmann::json::array();
 }
 
 } // namespace gs_mmo

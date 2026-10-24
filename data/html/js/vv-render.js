@@ -80,7 +80,28 @@ class VvRender {
 
     this.on_players_events = function (data) {
       if (data === undefined) return;
-      console.log("Render, on_players_events", data);
+      // console.log("Render, on_players_events", data);
+      for (var i = 0; i < data["e"].length; i++) {
+        var e = data["e"][i];
+        var et = e["t"];
+        var eid = e["id"];
+        // ADD_PLAYER = 1,
+        // REMOVE_PLAYER = 2,
+        // MOVE_PLAYER = 3
+
+        if (et == 1) { // ADD_PLAYER
+          self.__other_players[eid] = {};
+          self.__other_players[eid]["x"] = e["x"];
+          self.__other_players[eid]["y"] = e["y"];
+        } else if (et == 2) { // REMOVE_PLAYER
+          delete self.__other_players[eid];
+        } else if (et == 3) { // MOVE_PLAYER
+          self.__other_players[eid]["x"] = e["x"];
+          self.__other_players[eid]["y"] = e["y"];
+        }
+      }
+      const keys = Object.keys(self.__other_players);
+      // console.log("Render, on_players_events", keys);
     }
   }
 
@@ -349,6 +370,7 @@ class VvRender {
     if (this.cacheImages[texturePlayer] && this.cacheImages[texturePlayer].state == 'loaded') {
 
       const keys = Object.keys(this.__other_players);
+      // console.log("draw_players " + keys);
       for (var key of keys) {
         if (key === this.player_id) {
           continue;

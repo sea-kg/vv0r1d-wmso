@@ -55,6 +55,12 @@
 
 namespace gs_mmo {
 
+enum class game_net_events_type : int {
+  ADD_PLAYER = 1,
+  REMOVE_PLAYER = 2,
+  MOVE_PLAYER = 3
+};
+
 class game_net_events {
 public:
   game_net_events();
@@ -66,9 +72,11 @@ public:
   // void add_event(const nlohmann::json &);
   std::string to_string_json_request();
   long get_last_time_event_ms() const;
+  std::string pop_and_reset(long &last_update);
 
 private:
-  void add_event_no_mutex(const nlohmann::json &);
+  void unsafe_add_event(const nlohmann::json &);
+  void unsafe_reset();
   std::mutex m_mutex;
   bool m_collect_events;
   nlohmann::json m_resp;

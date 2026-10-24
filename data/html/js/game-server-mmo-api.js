@@ -70,7 +70,7 @@ class GameServerMMOApi {
 
       this.ws.onmessage = function (ev) {
         var received_msg = ev.data;
-        console.log("received_msg:", received_msg);
+        // console.log("received_msg:", received_msg);
         var resp = JSON.parse(received_msg);
         var msg_id = resp["id"];
 

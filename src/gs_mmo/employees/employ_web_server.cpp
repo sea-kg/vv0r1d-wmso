@@ -56,10 +56,12 @@
 #include <cstring>
 #include <fstream>
 #include <initializer_list>
+#include <memory>
 #include <optional>
 #include <regex>
 #include <sea5kg_logger.h>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <wsjcpp_core.h>
@@ -73,9 +75,26 @@
 #include "hssl.h"            // libhv
 #include "htime.h"           // libhv
 
+struct WeakPtrHash {
+  template <typename T> std::size_t operator()(const std::weak_ptr<T> &wp) const {
+    return wp.owner_before(std::weak_ptr<T>{}) ? 0 : 1;
+    if (auto sp = wp.lock()) {
+      return std::hash<T *>()(sp.get());
+    }
+    return 0;
+  }
+};
+
+struct WeakPtrEqual {
+  template <typename T> bool operator()(const std::weak_ptr<T> &lhs, const std::weak_ptr<T> &rhs) const {
+    return !lhs.owner_before(rhs) && !rhs.owner_before(lhs);
+  }
+};
+
 class employ_web_server : public WsjcppEmployBase, public gs_mmo::web_server {
 public:
   employ_web_server();
+  ~employ_web_server();
   virtual bool init(const std::string &name, bool bSilent) override;
   virtual bool deinit(const std::string &name, bool bSilent) override;
 
@@ -88,11 +107,13 @@ private:
   int response_error(int http_code, HttpRequest *req, HttpResponse *resp, const gs_mmo::error_info &err);
   void log_err(const std::string &message);
   void log_warn(const std::string &message);
-  void updateJsonCache();
 
   void web_socket_onopen(const WebSocketChannelPtr &channel, const HttpRequestPtr &req);
   void web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg);
   void web_socket_onclose(const WebSocketChannelPtr &channel);
+  void web_socket_run_sync_thread();
+  void web_socket_start_sync_thread();
+  void web_socket_stop_sync_thread();
 
   int httpWebFolder(HttpRequest *req, HttpResponse *resp);
   int httpApiV1Game(HttpRequest *req, HttpResponse *resp);
@@ -121,7 +142,8 @@ private:
   // std::string m_sCacheResponseGameJson;
   // std::string m_sCacheResponseTeamsJson;
   std::mutex m_mutex_connected_users;
-  std::map<const WebSocketChannelPtr *, std::string> m_connected_users;
+  // std::map<const WebSocketChannelPtr *, std::string> m_connected_users;
+  std::unordered_map<std::weak_ptr<hv::WebSocketChannel>, std::string, WeakPtrHash, WeakPtrEqual> m_connected_users;
 
   // TODO to employ
   unsigned int m_userid_counter;
@@ -130,6 +152,8 @@ private:
   nlohmann::json m_activity;
   gs_mmo::game_net_events m_all_players;
   gs_mmo::game_net_events m_net_events;
+  std::thread m_sync_thread;
+  std::atomic<bool> m_sync_thread_running{true};
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
@@ -141,17 +165,23 @@ employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::n
   m_config = nullptr;
   m_all_players.set_method_name("init_players");
   m_all_players.set_collect_events(false);
+  m_net_events.set_method_name("players_events");
+}
+
+employ_web_server::~employ_web_server() {
+  web_socket_stop_sync_thread();
 }
 
 bool employ_web_server::init(const std::string &name, bool silent) {
   sea5kg::log::info(TAG, "init");
   m_config = findWsjcppEmploy<gs_mmo::config>();
-
+  web_socket_start_sync_thread();
   return true;
 }
 
 bool employ_web_server::deinit(const std::string &name, bool silent) {
   sea5kg::log::info(TAG, "deinit");
+  web_socket_stop_sync_thread();
   return true;
 }
 
@@ -195,7 +225,6 @@ int employ_web_server::start() {
   g_http_logger->set_log_level_console_output(sea5kg::log_level::DISABLE);
 
   m_sHtmlFolder = config->html_folder();
-  // updateJsonCache();
 
   std::string starting_message =
     "Starting scoreboard on http://localhost:" + std::to_string(m_config->web_port()) + "/";
@@ -230,8 +259,7 @@ int employ_web_server::start() {
     std::bind(&employ_web_server::web_socket_onopen, this, std::placeholders::_1, std::placeholders::_2);
   m_webSocketService->onmessage =
     std::bind(&employ_web_server::web_socket_onmessage, this, std::placeholders::_1, std::placeholders::_2);
-    m_webSocketService->onclose =
-      std::bind(&employ_web_server::web_socket_onclose, this, std::placeholders::_1);
+  m_webSocketService->onclose = std::bind(&employ_web_server::web_socket_onclose, this, std::placeholders::_1);
 
   websocket_server_t server;
   server.service = m_pHttpService.get();
@@ -262,54 +290,17 @@ void employ_web_server::log_warn(const std::string &message) {
   g_http_logger->warning(TAG, message);
 }
 
-void employ_web_server::updateJsonCache() {
-  // nlohmann::json jsonGame;
-  // nlohmann::json jsonTeams;
-
-  // jsonGame[gs_mmo::json_fields::CTF01D_VERSION] = m_config->ctf01d_version();
-  // jsonGame["game_id"] = m_config->game_id();
-  // jsonGame["game_name"] = m_config->game_name();
-  // jsonGame["game_start"] = WsjcppCore::formatTimeUTC(m_config->game_start_utc_in_seconds()) + " (UTC)";
-  // jsonGame["game_end"] = WsjcppCore::formatTimeUTC(m_config->game_end_utc_in_seconds()) + " (UTC)";
-  // jsonGame["game_has_coffee_break"] = m_config->game_has_coffee_break();
-  // jsonGame["game_coffee_break_start"] = WsjcppCore::formatTimeUTC(m_config->game_coffee_break_start_utc_in_seconds())
-  // + " (UTC)"; jsonGame["game_coffee_break_end"] =
-  // WsjcppCore::formatTimeUTC(m_config->game_coffee_break_end_utc_in_seconds()) + " (UTC)"; jsonGame["teams"] =
-  // nlohmann::json::array(); jsonGame["services"] = nlohmann::json::array();
-
-  // for (unsigned int i = 0; i < m_config->services().size(); i++) {
-  //   gs_mmo::service_config service_config = m_config->services()[i];
-  //   if (service_config.is_enabled()) {
-  //     nlohmann::json service_info;
-  //     service_info["id"] = service_config.id();
-  //     service_info["name"] = service_config.name();
-  //     service_info["round_time_in_sec"] = service_config.round_in_seconds();
-  //     jsonGame["services"].push_back(service_info);
-  //   }
-  // }
-
-  // for (unsigned int i = 0; i < m_config->teams().size(); i++) {
-  //     gs_mmo::team_config teamConf = m_config->teams()[i];
-  //     nlohmann::json teamInfo = teamConf.to_json();
-  //     jsonGame["teams"].push_back(teamInfo);
-  //     jsonTeams["teams"].push_back(teamInfo);
-  // }
-
-  // m_sCacheResponseGameJson = jsonGame.dump();
-  // m_sCacheResponseTeamsJson = jsonTeams.dump();
-}
-
 void employ_web_server::web_socket_onopen(const WebSocketChannelPtr &channel, const HttpRequestPtr &req) {
   // channel->c
   std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-  m_connected_users.insert(std::pair<const WebSocketChannelPtr *, std::string>(&channel, ""));
+  m_connected_users.insert(std::pair<std::weak_ptr<hv::WebSocketChannel>, std::string>(channel, ""));
   std::cout << "ws. onopen = " << std::endl;
   // TODO send hello with version
 }
 
 void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg) {
-  const WebSocketChannelPtr *ch_ptr = &channel;
-  std::cout << "m_connected_users.count(ch_ptr) = " << m_connected_users.count(ch_ptr) << std::endl;
+  // const WebSocketChannelPtr *ch_ptr = &channel;
+  std::cout << "m_connected_users.count(ch_ptr) = " << m_connected_users.count(channel) << std::endl;
   // VvWsConnectionContext *ctx = channel->getContext<VvWsConnectionContext>();
   std::cout << "ws. msg = " << msg << std::endl;
   // https://www.jsonrpc.org/specification
@@ -318,7 +309,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   std::string tkn;
   {
     std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-    auto it = m_connected_users.find(ch_ptr);
+    auto it = m_connected_users.find(channel);
     if (it != m_connected_users.end())
       tkn = it->second;
   }
@@ -332,25 +323,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
 
   std::string sMethod = j["method"];
   if (sMethod == "hello") {
-  // if (sMethod == "get_player_position") {
-  //   nlohmann::json jsonResp;
-  //   jsonResp["id"] = j["id"];
-  //   jsonResp["method"] = sMethod;
-
-  //   if (ctx->getPlayerContext()) {
-  //     nlohmann::json jsonResult;
-  //     jsonResult["x"] = ctx->getPlayerContext()->getPlayerX();
-  //     jsonResult["y"] = ctx->getPlayerContext()->getPlayerY();
-  //     jsonResp["result"] = jsonResult;
-  //   } else {
-  //     nlohmann::json jsonError;
-  //     jsonError["code"] = 550;
-  //     jsonError["message"] = "Not found error context";
-  //     jsonResp["error"] = jsonError;
-  //   }
-  //   channel->send(jsonResp.dump());
-  // } else if (j["method"] == "player_move_to") {
-  //   ctx->handleMessage(msg);
+    // nothing
   } else if (sMethod == "change_player_position") {
     // std::string tkn = m_connected_users.find(ch_ptr)->second;
     // if (player_ctx.id != )
@@ -367,7 +340,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
     std::string new_tkn = j["params"]["token"];
     {
       std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-      auto it = m_connected_users.find(ch_ptr);
+      auto it = m_connected_users.find(channel);
       if (it != m_connected_users.end())
         it->second = new_tkn;
     }
@@ -376,8 +349,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
       auto it = m_players.find(new_tkn);
       if (it != m_players.end())
         player_ctx = it->second;
-      else
-      {
+      else {
         player_ctx.set_id("p" + std::to_string(m_userid_counter++));
         m_players[new_tkn] = player_ctx;
       }
@@ -390,23 +362,6 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
     jsonResp["result"] = player_ctx.to_json();
     channel->send(jsonResp.dump());
     channel->send(m_all_players.to_string_json_request());
-
-  // } else if (sMethod == "get_map") {
-  //   nlohmann::json jsonResp;
-  //   jsonResp["id"] = j["id"];
-  //   jsonResp["method"] = sMethod;
-  //   if (ctx->getPlayerContext()) {
-  //     nlohmann::json jsonResult;
-  //     int nX = ctx->getPlayerContext()->getPlayerX();
-  //     int nY = ctx->getPlayerContext()->getPlayerY();
-  //     jsonResp["result"] = m_pGameMapObjects->toJson(nX - 1000, nY - 1000, 2000, 2000);
-  //   } else {
-  //     nlohmann::json jsonError;
-  //     jsonError["code"] = 550;
-  //     jsonError["message"] = "Not found error context";
-  //     jsonResp["error"] = jsonError;
-  //   }
-  //   channel->send(jsonResp.dump());
   } else {
     std::cout << "Unknown " << sMethod << std::endl;
   }
@@ -414,10 +369,10 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
 
 void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
   std::cout << "ws. onclose = " << std::endl;
-  const WebSocketChannelPtr *ch_ptr = &channel;
+  // const WebSocketChannelPtr *ch_ptr = &channel;
   std::lock_guard<std::mutex> lock(m_mutex_connected_users);
   std::string tkn;
-  auto it = m_connected_users.find(ch_ptr);
+  auto it = m_connected_users.find(channel);
   if (it != m_connected_users.end()) {
     tkn = it->second;
     m_connected_users.erase(it);
@@ -433,6 +388,48 @@ void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
     m_all_players.remove_player(player_ctx.id());
     m_net_events.remove_player(player_ctx.id());
   }
+}
+
+void employ_web_server::web_socket_run_sync_thread() {
+  int frames_per_second = 10; // magic number must be in config
+  const auto period = std::chrono::milliseconds(1000 / frames_per_second);
+  auto next = std::chrono::steady_clock::now();
+
+  long last_update = m_net_events.get_last_time_event_ms();
+
+  while (m_sync_thread_running) {
+    // do work
+    if (last_update < m_net_events.get_last_time_event_ms()) {
+      std::string event_data = m_net_events.pop_and_reset(last_update);
+      std::lock_guard<std::mutex> lock(m_mutex_connected_users);
+      for (const auto &[channel_weak, token] : m_connected_users) {
+        if (token.empty())
+          continue;
+        if (auto channel = channel_weak.lock()) {
+          channel->send(event_data);
+        } else {
+          hlogi("Channel is dead");
+          // sea5kg::log::warning(TAG, "");
+        }
+      }
+    }
+
+    next += period;
+    std::this_thread::sleep_until(next);
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
+  }
+}
+
+void employ_web_server::web_socket_start_sync_thread() {
+  m_sync_thread_running = true;
+  m_sync_thread = std::thread(&employ_web_server::web_socket_run_sync_thread, this);
+}
+
+void employ_web_server::web_socket_stop_sync_thread() {
+  m_sync_thread_running = false;
+  if (m_sync_thread.joinable())
+    m_sync_thread.join();
 }
 
 int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
@@ -451,10 +448,6 @@ int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
   // // hlogi("request_path = " + request_path);
   // if (request_path == "/flag") { // Public endpoint. Allowed without authorization.
   //   return this->httpApiV1Flag(req, resp);
-  // }
-
-  // if (request_path.rfind(m_logo_prefix, 0) == 0) {
-  //   return httpLogo(request_path, req, resp);
   // }
 
   // if (request_path.rfind(m_sApiPathPrefix, 0) == 0) {
@@ -727,24 +720,5 @@ int employ_web_server::httpApiV1Flag(HttpRequest *req, HttpResponse *resp) {
   //     false // copy buffer
   // );
   // resp->content_type = TEXT_PLAIN;
-  return 200;
-}
-
-int employ_web_server::httpLogo(const std::string &request_path, HttpRequest *req, HttpResponse *resp) {
-  // TODO refactoring it
-
-  // std::string id = request_path.substr(m_logo_prefix_length, request_path.length() - m_logo_prefix_length);
-  // auto images = findWsjcppEmploy<gs_mmo::images>();
-  // std::shared_ptr<gs_mmo::image> img = images->find_image(id);
-
-  // if (!img) {
-  //   return 404;
-  // }
-  // resp->Data(
-  //   img->pBuffer,
-  //   img->nBufferSize,
-  //   true // nocopy
-  // );
-  // resp->SetContentTypeByFilename(img->filename().c_str());
   return 200;
 }
