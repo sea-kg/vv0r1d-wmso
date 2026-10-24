@@ -12,11 +12,11 @@ document.addEventListener("keydown", event => {
   }
 });
 
-window.vvapi = new VvApi();
+window.gs_mmo_api = new GameServerMMOApi();
 
 function load_first_map(player_coordinates) {
 
-  // vvapi.ws_get_map(player_coordinates).done(function(result) {
+  // gs_mmo_api.ws_get_map(player_coordinates).done(function(result) {
   //     var objects = result["objects"];
   //     for (var i in objects) {
   //         var obj = objects[i];
@@ -46,14 +46,14 @@ document.addEventListener('DOMContentLoaded', function () {
   resize_canvas();
   window.vvrender = new VvRender('game_window_render');
 
-  vvapi.ws_get_player_position().done(function (data) {
-    console.log("ws_get_player_position: ", data);
-    vvrender.player_coordinates = data;
-    vvrender.player_target_coordinates = data;
-    load_first_map(vvrender.player_coordinates)
-  })
+  // window.gs_mmo_api.ws_get_player_position().done(function (data) {
+  //   console.log("ws_get_player_position: ", data);
+  //   vvrender.player_coordinates = data;
+  //   vvrender.player_target_coordinates = data;
+  //   load_first_map(vvrender.player_coordinates)
+  // })
 
-  window.vvapi.on_ws_state((state) => {
+  window.gs_mmo_api.on_ws_state((state) => {
     const el = document.getElementById("ws-status");
     switch (state) {
       case "connecting":
@@ -70,6 +70,10 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
     }
   });
+
+  window.gs_mmo_api.on_init_player(window.vvrender.on_init_player);
+  window.gs_mmo_api.on_init_players(window.vvrender.on_init_players);
+  window.gs_mmo_api.on_players_events(window.vvrender.on_players_events);
 });
 
 function resize_canvas() {

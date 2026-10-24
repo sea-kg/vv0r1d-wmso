@@ -5,15 +5,42 @@ VVAPI_LAYER_ROADS = 2;
 VVAPI_LAYER_VEGETATION = 3;
 VVAPI_LAYER_BUILDING = 4;
 
-class VvApi {
+class GameServerMMOApiEventListener {
+  constructor(init_data) {
+    this.__listeners = [];
+    var self = this;
+    self.__last_data = init_data;
+  };
+
+  set_data(data) {
+    this.__last_data = data;
+    this.__listeners.forEach(fn => fn(data));
+  }
+
+  get_last_data() {
+    return this.__last_data;
+  }
+
+  add(fn) {
+    this.__listeners.push(fn);
+    fn(self.__last_data); // fire immediately with current state
+    return () => {
+      this.__listeners = this.__listeners.filter(f => f !== fn);
+    };
+  }
+};
+
+
+class GameServerMMOApi {
   constructor() {
     this.base_url = location.protocol + "//" + location.host;
     this.ws_req_id = 0;
-    this.player_x = 0;
-    this.player_y = 0;
     this.ws_requests = {};
-    this.ws_state = "connecting";   // "connecting" | "connected" | "disconnected"
-    this.ws_state_listeners = [];
+    this.__ws_state = new GameServerMMOApiEventListener("connecting"); // "connecting" | "connected" | "disconnected"
+    // this.__init_player = new GameServerMMOApiEventListener({"id": "", "x": 0, "y": 0});
+    this.__init_player = new GameServerMMOApiEventListener();
+    this.__init_players = new GameServerMMOApiEventListener();
+    this.__players_events = new GameServerMMOApiEventListener();
 
     var self = this;
 
@@ -48,14 +75,23 @@ class VvApi {
         var msg_id = resp["id"];
 
         if (msg_id == "auth") {
-          this.player_x = resp["result"]["x"];
-          this.player_y = resp["result"]["y"];
+          self.__init_player.set_data(resp["result"])
           self._set_ws_state("connected");
         }
 
         if (self.ws_requests[msg_id]) {
           self.ws_requests[msg_id].resolve(resp["result"]);
           delete self.ws_requests[msg_id];
+        }
+        if (resp["method"] !== undefined) {
+          if (resp["method"] === "init_players") {
+            console.log(resp)
+            self.__init_players.set_data(resp["params"]);
+          } else if (resp["method"] === "players_events") {
+            self.__players_events.set_data(resp["params"]);
+          } else {
+            console.warn("No handled method", resp["method"]);
+          }
         }
         console.log("received websocket message: " + received_msg);
       };
@@ -71,22 +107,29 @@ class VvApi {
       };
     } else {
       console.log("not found WebSocket!");
-      this.ws_state = "disconnected";
+      this.__ws_state.set_data("disconnected")
     }
   }
 
   _set_ws_state(state) {
-    if (this.ws_state === state) return;
-    this.ws_state = state;
-    this.ws_state_listeners.forEach(fn => fn(state));
+    if (this.__ws_state.get_last_data() === state) return;
+    this.__ws_state.set_data(state)
   }
 
   on_ws_state(fn) {
-    this.ws_state_listeners.push(fn);
-    fn(this.ws_state); // fire immediately with current state
-    return () => {
-      this.ws_state_listeners = this.ws_state_listeners.filter(f => f !== fn);
-    };
+    return this.__ws_state.add(fn);
+  }
+
+  on_init_player(fn) {
+    return this.__init_player.add(fn);
+  }
+
+  on_init_players(fn) {
+    return this.__init_players.add(fn);
+  }
+
+  on_players_events(fn) {
+    return this.__players_events.add(fn);
   }
 
   random_session_token() {
@@ -196,7 +239,8 @@ class VvApi {
   ws_request(methodname, params, d) {
     var defer = d || this.promise();
     var _params = params || {};
-    if (!this.ws_state) {
+    if (this.__ws_state.get_last_data() !== "connected") {
+      console.warn("No connection. retry after 100ms");
       var self = this;
       setTimeout(function () {
         self.ws_request(methodname, _params, defer);
@@ -220,10 +264,7 @@ class VvApi {
 
   ws_get_player_position() {
     var defer = this.promise();
-    defer.resolve({
-      "x": this.player_x,
-      "y": this.player_y,
-    });
+    defer.resolve(this.__init_player.get_last_data());
     return defer;
     // console.log("get_player_position");
     // return this.ws_request("get_player_position", {});

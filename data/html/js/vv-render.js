@@ -13,6 +13,7 @@ class VvRender {
     this.left_panel_width = 200;
     this.bottom_panel_height = 50;
     this.perf = [];
+    this.__other_players = {};
     this.layer_background = [];
     this.layer_roads = [];
     this.layer_vegetation = [];
@@ -59,8 +60,28 @@ class VvRender {
       "menu-modes",
     ], function () {
       self.draw_borders();
+    });
+
+    this.on_init_player = function (data) {
+      if (data === undefined) return;
+      console.log("on_init_player: ", data);
+      self.player_id = data["id"];
+      self.player_coordinates = data;
+      self.player_target_coordinates = data;
+      console.log("Render, on_init_player", data);
+      self.resized();
     }
-    );
+
+    this.on_init_players = function (data) {
+      if (data === undefined) return;
+      console.log("Render, on_init_players", data);
+      Object.assign(self.__other_players, data["p"]);
+    }
+
+    this.on_players_events = function (data) {
+      if (data === undefined) return;
+      console.log("Render, on_players_events", data);
+    }
   }
 
   resized() {
@@ -320,6 +341,39 @@ class VvRender {
 
   }
 
+  draw_players() {
+    const texturePlayer = "players/mafuyu";
+    if (!this.cacheImages[texturePlayer]) {
+      this.loadImage(texturePlayer);
+    }
+    if (this.cacheImages[texturePlayer] && this.cacheImages[texturePlayer].state == 'loaded') {
+
+      const keys = Object.keys(this.__other_players);
+      for (var key of keys) {
+        if (key === this.player_id) {
+          continue;
+        }
+        var x = this.__other_players[key]["x"]
+        var y = this.__other_players[key]["y"]
+
+        // var draw_coordinates = {
+        //   x: (window.innerWidth - this.left_panel_width) / 2,
+        //   y: (window.innerHeight - this.bottom_panel_height) / 2
+        // };
+
+        this.ctx.drawImage(
+          this.cacheImages[texturePlayer].img,
+          this.render_frame_player.x,
+          this.render_frame_player.y,
+          50, 50,
+          x - this.topLeftRealX - 25,
+          y - this.topLeftRealY - 45,
+          50, 50
+        );
+      }
+    }
+  }
+
   move_player() {
     if (!this.player_coordinates) {
       return;
@@ -363,7 +417,7 @@ class VvRender {
       // console.log(angel);
       this.player_coordinates.x += parseInt(Math.sin(angel) * 5);
       this.player_coordinates.y += parseInt(Math.cos(angel) * 5);
-      vvapi.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
+      gs_mmo_api.ws_change_player_position(this.player_coordinates.x, this.player_coordinates.y);
     } else {
       this.render_frame_player = {
         x: 0,
@@ -375,6 +429,7 @@ class VvRender {
   }
 
   update() {
+    // console.log("update");
     var _perf_start = performance.now();
     this.ctx.fillStyle = 'black';
     this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
@@ -394,6 +449,7 @@ class VvRender {
     this.draw_buildings();
     this.draw_borders();
     this.draw_player();
+    this.draw_players();
     this.update_perf(performance.now() - _perf_start);
   }
 
@@ -457,7 +513,7 @@ class VvRender {
 
     if (this.render_click_mode == 'destroy') {
       if (this.highlight_road) {
-        vvapi.ws_destroy_road(this.highlight_road);
+        gs_mmo_api.ws_destroy_road(this.highlight_road);
         return;
       }
     }
