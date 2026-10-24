@@ -56,7 +56,6 @@
 #include <wsjcpp_employees.h>
 #include "game_map_objects.h"
 #include <sqlite3.h>
-#include "vv_server.h"
 #include "database_map.h"
 #include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_config.h"

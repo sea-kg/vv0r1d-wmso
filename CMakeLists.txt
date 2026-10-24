@@ -11,7 +11,6 @@ set(EXECUTABLE_OUTPUT_PATH ${game-server-mmo_SOURCE_DIR})
 list (APPEND WSJCPP_INCLUDE_DIRS "src")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/db")
 list (APPEND WSJCPP_INCLUDE_DIRS "src/game")
-list (APPEND WSJCPP_INCLUDE_DIRS "src/server")
 
 list (APPEND WSJCPP_SOURCES "src/main.cpp")
 
@@ -37,12 +36,6 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_web
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_object.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_objects.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/game/game_map_generator.cpp")
-
-# server
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_http_server.cpp")
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_ws_server.cpp")
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/vv_server.cpp")
-list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/server/player_context.cpp")
 
 # libhv
 set(WITH_OPENSSL OFF CACHE BOOL "")
