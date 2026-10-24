@@ -63,11 +63,16 @@ public:
   void add_player(const gs_mmo::player_context &ctx);
   void remove_player(const std::string &userid);
   void update_player(const gs_mmo::player_context &ctx);
+  // void add_event(const nlohmann::json &);
   std::string to_string_json_request();
+  long get_last_time_event_ms() const;
+
 private:
+  void add_event_no_mutex(const nlohmann::json &);
   std::mutex m_mutex;
   bool m_collect_events;
   nlohmann::json m_resp;
+  long m_last_events_ms;
 };
 
 } // namespace gs_mmo

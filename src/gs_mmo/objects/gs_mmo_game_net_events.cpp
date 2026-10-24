@@ -56,6 +56,7 @@ game_net_events::game_net_events() : m_collect_events(true) {
   m_resp["params"] = nlohmann::json::object();
   m_resp["params"]["p"] = nlohmann::json::object();
   m_resp["params"]["e"] = nlohmann::json::array();
+  m_last_events_ms = 0;
 }
 
 void game_net_events::set_method_name(const std::string &method) {
@@ -70,12 +71,24 @@ void game_net_events::add_player(const gs_mmo::player_context &ctx) {
   std::lock_guard<std::mutex> lock(m_mutex);
   m_resp["params"]["p"][ctx.id()] = nlohmann::json::object();
   ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
+  if (m_collect_events) {
+    nlohmann::json e = nlohmann::json::object();
+    e["t"] = "add";
+    e["id"] = ctx.id();
+    add_event_no_mutex(e);
+  }
 }
 
 void game_net_events::remove_player(const std::string &userid) {
   std::lock_guard<std::mutex> lock(m_mutex);
   if (m_resp["params"]["p"].contains(userid)) {
     m_resp["params"]["p"].erase(userid);
+  }
+  if (m_collect_events) {
+    nlohmann::json e = nlohmann::json::object();
+    e["t"] = "rm";
+    e["id"] = userid;
+    add_event_no_mutex(e);
   }
 }
 
@@ -84,11 +97,43 @@ void game_net_events::update_player(const gs_mmo::player_context &ctx) {
   if (m_resp["params"]["p"].contains(ctx.id())) {
     ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
   }
+  if (m_collect_events) {
+    bool found_event = false;
+    for (auto &e: m_resp["params"]["e"]) {
+      if (e["t"] == "mv" && e.contains("id") && e["id"] == ctx.id()) {
+        ctx.update_position_in_json(e);
+        found_event = true;
+        // No need update m_last_events_ms
+        break;
+      }
+    }
+    if (!found_event) {
+      nlohmann::json e = nlohmann::json::object();
+      e["t"] = "mv";
+      e["id"] = ctx.id();
+      ctx.update_position_in_json(e);
+      add_event_no_mutex(e);
+    }
+  }
 }
 
 std::string game_net_events::to_string_json_request() {
   std::lock_guard<std::mutex> lock(m_mutex);
   return m_resp.dump();
+}
+
+long game_net_events::get_last_time_event_ms() const {
+  return m_last_events_ms;
+}
+
+void game_net_events::add_event_no_mutex(const nlohmann::json &e_data) {
+  auto now = std::chrono::system_clock::now().time_since_epoch();
+  long now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+
+  nlohmann::json e = e_data;
+  e["n"] = now_ms;
+  m_resp["params"]["e"].push_back(e);
+  m_last_events_ms = now_ms;
 }
 
 } // namespace gs_mmo

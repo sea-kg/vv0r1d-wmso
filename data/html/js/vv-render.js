@@ -363,6 +363,7 @@ class VvRender {
 
         this.ctx.drawImage(
           this.cacheImages[texturePlayer].img,
+          // TODO specify for each player
           this.render_frame_player.x,
           this.render_frame_player.y,
           50, 50,

@@ -85,7 +85,6 @@ class GameServerMMOApi {
         }
         if (resp["method"] !== undefined) {
           if (resp["method"] === "init_players") {
-            console.log(resp)
             self.__init_players.set_data(resp["params"]);
           } else if (resp["method"] === "players_events") {
             self.__players_events.set_data(resp["params"]);

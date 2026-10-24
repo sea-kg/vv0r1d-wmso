@@ -359,6 +359,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
       it->second.update_position(j["params"]["x"], j["params"]["y"]);
       // TODO send event player changed coordinates
       m_all_players.update_player(it->second);
+      m_net_events.update_player(it->second);
     } else {
       std::cout << "Not found player by token " << tkn << std::endl;
     }
@@ -382,6 +383,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
       }
     }
     m_all_players.add_player(player_ctx);
+    m_net_events.add_player(player_ctx);
 
     nlohmann::json jsonResp;
     jsonResp["id"] = j["id"];
@@ -429,6 +431,7 @@ void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
   }
   if (player_ctx.id() != "") {
     m_all_players.remove_player(player_ctx.id());
+    m_net_events.remove_player(player_ctx.id());
   }
 }
 
