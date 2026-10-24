@@ -49,7 +49,8 @@
 #include "gs_mmo/include/gs_mmo_config.h"
 #include "gs_mmo/include/gs_mmo_globals.h"
 #include "gs_mmo/include/gs_mmo_web_server.h"
-#include "objects/gs_mmo_error_info.h"
+#include "gs_mmo/objects/gs_mmo_error_info.h"
+#include "gs_mmo/objects/gs_mmo_game_net_events.h"
 #include <atomic>
 #include <cstring>
 #include <fstream>
@@ -73,7 +74,7 @@
 
 
 struct UserContext {
-  int id = 0;
+  std::string id = "";
   int x = 0;
   int y = 0;
 };
@@ -132,6 +133,9 @@ private:
   unsigned int m_userid_counter;
   std::map<std::string, UserContext> m_user_context;
   gs_mmo::config *m_config;
+  nlohmann::json m_activity;
+  gs_mmo::game_net_events m_all_players;
+  gs_mmo::game_net_events m_net_events;
 };
 
 REGISTRY_WSJCPP_EMPLOY(employ_web_server)
@@ -141,6 +145,8 @@ employ_web_server::employ_web_server() : WsjcppEmployBase({gs_mmo::web_server::n
   m_sApiPathPrefix = "/api/v1/";
   m_userid_counter = 1;
   m_config = nullptr;
+  m_all_players.set_method_name("init_players");
+  m_all_players.set_collect_events(false);
 }
 
 bool employ_web_server::init(const std::string &name, bool silent) {
@@ -304,6 +310,7 @@ void employ_web_server::web_socket_onopen(const WebSocketChannelPtr &channel, co
   std::lock_guard<std::mutex> lock(m_mutex_connected_users);
   m_connected_users.insert(std::pair<const WebSocketChannelPtr *, std::string>(&channel, ""));
   std::cout << "ws. onopen = " << std::endl;
+  // TODO send hello with version
 }
 
 void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel, const std::string &msg) {
@@ -358,6 +365,7 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
       it->second.x = j["params"]["x"];
       it->second.y = j["params"]["y"];
       // TODO send event player changed coordinates
+      m_all_players.update_player(it->second.id, it->second.x, it->second.y);
     } else {
       std::cout << "Not found player by token " << tkn << std::endl;
     }
@@ -376,10 +384,12 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
         user_ctx = it->second;
       else
       {
-        user_ctx.id = m_userid_counter++;
+        user_ctx.id = std::to_string(m_userid_counter++);
         m_user_context[new_tkn] = user_ctx;
       }
     }
+    m_all_players.add_player(user_ctx.id, user_ctx.x, user_ctx.y);
+
     nlohmann::json jsonResp;
     jsonResp["id"] = j["id"];
 
@@ -389,6 +399,8 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
     jsonResult["y"] = user_ctx.y;
     jsonResp["result"] = jsonResult;
     channel->send(jsonResp.dump());
+    channel->send(m_all_players.to_string_json_request());
+
   // } else if (sMethod == "get_map") {
   //   nlohmann::json jsonResp;
   //   jsonResp["id"] = j["id"];
@@ -414,9 +426,22 @@ void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
   std::cout << "ws. onclose = " << std::endl;
   const WebSocketChannelPtr *ch_ptr = &channel;
   std::lock_guard<std::mutex> lock(m_mutex_connected_users);
-  auto iter = m_connected_users.find(ch_ptr);
-  if (iter != m_connected_users.end())
-    m_connected_users.erase(iter);
+  std::string tkn;
+  auto it = m_connected_users.find(ch_ptr);
+  if (it != m_connected_users.end()) {
+    tkn = it->second;
+    m_connected_users.erase(it);
+  }
+
+  UserContext user_ctx;
+  if (tkn != "") {
+    auto it = m_user_context.find(tkn);
+    if (it != m_user_context.end())
+      user_ctx = it->second;
+  }
+  if (user_ctx.id != "") {
+    m_all_players.remove_player(user_ctx.id);
+  }
 }
 
 int employ_web_server::httpWebFolder(HttpRequest *req, HttpResponse *resp) {
