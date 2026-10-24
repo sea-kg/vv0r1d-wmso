@@ -66,11 +66,10 @@ void game_net_events::set_collect_events(bool v) {
   m_collect_events = v;
 }
 
-void game_net_events::add_player(const std::string &userid, int x, int y) {
+void game_net_events::add_player(const gs_mmo::player_context &ctx) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  m_resp["params"]["p"][userid] = nlohmann::json::object();
-  m_resp["params"]["p"][userid]["x"] = x;
-  m_resp["params"]["p"][userid]["y"] = y;
+  m_resp["params"]["p"][ctx.id()] = nlohmann::json::object();
+  ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
 }
 
 void game_net_events::remove_player(const std::string &userid) {
@@ -80,11 +79,10 @@ void game_net_events::remove_player(const std::string &userid) {
   }
 }
 
-void game_net_events::update_player(const std::string &userid, int x, int y) {
+void game_net_events::update_player(const gs_mmo::player_context &ctx) {
   std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_resp["params"]["p"].contains(userid)) {
-    m_resp["params"]["p"][userid]["x"] = x;
-    m_resp["params"]["p"][userid]["y"] = y;
+  if (m_resp["params"]["p"].contains(ctx.id())) {
+    ctx.update_position_in_json(m_resp["params"]["p"][ctx.id()]);
   }
 }
 

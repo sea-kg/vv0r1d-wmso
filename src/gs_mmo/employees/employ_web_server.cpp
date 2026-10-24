@@ -51,6 +51,7 @@
 #include "gs_mmo/include/gs_mmo_web_server.h"
 #include "gs_mmo/objects/gs_mmo_error_info.h"
 #include "gs_mmo/objects/gs_mmo_game_net_events.h"
+#include "gs_mmo/objects/gs_mmo_player_context.h"
 #include <atomic>
 #include <cstring>
 #include <fstream>
@@ -71,13 +72,6 @@
 #include "hlog.h"            // libhv
 #include "hssl.h"            // libhv
 #include "htime.h"           // libhv
-
-
-struct UserContext {
-  std::string id = "";
-  int x = 0;
-  int y = 0;
-};
 
 class employ_web_server : public WsjcppEmployBase, public gs_mmo::web_server {
 public:
@@ -131,7 +125,7 @@ private:
 
   // TODO to employ
   unsigned int m_userid_counter;
-  std::map<std::string, UserContext> m_user_context;
+  std::map<std::string, gs_mmo::player_context> m_players;
   gs_mmo::config *m_config;
   nlohmann::json m_activity;
   gs_mmo::game_net_events m_all_players;
@@ -329,11 +323,11 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
       tkn = it->second;
   }
 
-  UserContext user_ctx;
+  gs_mmo::player_context player_ctx;
   if (tkn != "") {
-    auto it = m_user_context.find(tkn);
-    if (it != m_user_context.end())
-      user_ctx = it->second;
+    auto it = m_players.find(tkn);
+    if (it != m_players.end())
+      player_ctx = it->second;
   }
 
   std::string sMethod = j["method"];
@@ -359,13 +353,12 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
   //   ctx->handleMessage(msg);
   } else if (sMethod == "change_player_position") {
     // std::string tkn = m_connected_users.find(ch_ptr)->second;
-    // if (user_ctx.id != )
-    auto it = m_user_context.find(tkn);
-    if (it != m_user_context.end()) {
-      it->second.x = j["params"]["x"];
-      it->second.y = j["params"]["y"];
+    // if (player_ctx.id != )
+    auto it = m_players.find(tkn);
+    if (it != m_players.end()) {
+      it->second.update_position(j["params"]["x"], j["params"]["y"]);
       // TODO send event player changed coordinates
-      m_all_players.update_player(it->second.id, it->second.x, it->second.y);
+      m_all_players.update_player(it->second);
     } else {
       std::cout << "Not found player by token " << tkn << std::endl;
     }
@@ -379,25 +372,20 @@ void employ_web_server::web_socket_onmessage(const WebSocketChannelPtr &channel,
     }
 
     {
-      auto it = m_user_context.find(new_tkn);
-      if (it != m_user_context.end())
-        user_ctx = it->second;
+      auto it = m_players.find(new_tkn);
+      if (it != m_players.end())
+        player_ctx = it->second;
       else
       {
-        user_ctx.id = std::to_string(m_userid_counter++);
-        m_user_context[new_tkn] = user_ctx;
+        player_ctx.set_id("p" + std::to_string(m_userid_counter++));
+        m_players[new_tkn] = player_ctx;
       }
     }
-    m_all_players.add_player(user_ctx.id, user_ctx.x, user_ctx.y);
+    m_all_players.add_player(player_ctx);
 
     nlohmann::json jsonResp;
     jsonResp["id"] = j["id"];
-
-    nlohmann::json jsonResult;
-    jsonResult["id"] = user_ctx.id;
-    jsonResult["x"] = user_ctx.x;
-    jsonResult["y"] = user_ctx.y;
-    jsonResp["result"] = jsonResult;
+    jsonResp["result"] = player_ctx.to_json();
     channel->send(jsonResp.dump());
     channel->send(m_all_players.to_string_json_request());
 
@@ -433,14 +421,14 @@ void employ_web_server::web_socket_onclose(const WebSocketChannelPtr &channel) {
     m_connected_users.erase(it);
   }
 
-  UserContext user_ctx;
+  gs_mmo::player_context player_ctx;
   if (tkn != "") {
-    auto it = m_user_context.find(tkn);
-    if (it != m_user_context.end())
-      user_ctx = it->second;
+    auto it = m_players.find(tkn);
+    if (it != m_players.end())
+      player_ctx = it->second;
   }
-  if (user_ctx.id != "") {
-    m_all_players.remove_player(user_ctx.id);
+  if (player_ctx.id() != "") {
+    m_all_players.remove_player(player_ctx.id());
   }
 }
 

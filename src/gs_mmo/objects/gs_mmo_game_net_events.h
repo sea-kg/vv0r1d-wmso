@@ -50,6 +50,7 @@
 
 #include <string>
 #include <mutex>
+#include "gs_mmo_player_context.h"
 #include "third_party/nlohmann/json.hpp"
 
 namespace gs_mmo {
@@ -59,9 +60,9 @@ public:
   game_net_events();
   void set_method_name(const std::string &method);
   void set_collect_events(bool v);
-  void add_player(const std::string &userid, int x, int y);
+  void add_player(const gs_mmo::player_context &ctx);
   void remove_player(const std::string &userid);
-  void update_player(const std::string &userid, int x, int y);
+  void update_player(const gs_mmo::player_context &ctx);
   std::string to_string_json_request();
 private:
   std::mutex m_mutex;

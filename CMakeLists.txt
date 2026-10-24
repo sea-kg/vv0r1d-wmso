@@ -27,6 +27,7 @@ list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/db/database_map.cpp")
 # objects
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_error_info.cpp")
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_game_net_events.cpp")
+list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/objects/gs_mmo_player_context.cpp")
 
 # employees
 list (APPEND WSJCPP_SOURCES "${CMAKE_SOURCE_DIR}/src/gs_mmo/employees/employ_config.cpp")
